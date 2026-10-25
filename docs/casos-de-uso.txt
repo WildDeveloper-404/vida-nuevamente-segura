@@ -1,0 +1,1708 @@
+A continuación se presentan las 18 tablas detalladas de Casos de Uso oficiales con las que 
+estamos trabajando en el proyecto, estructuradas de forma exhaustiva bajo la plantilla 
+requerida, en lenguaje funcional de negocio, con el correo electrónico como credencial 
+exclusiva de acceso y manteniendo los cuatro roles oficiales (Administrador, Recepcionista, 
+Médico, Paciente): 
+CICLO DE DESARROLLO #1: Seguridad, 
+Catálogos Clínicos y Gestión de Citas 
+(CU01 al CU09) 
+CU01: Autenticar usuario, cargar vistas por rol y recuperar 
+contraseña 
+Atributo Detalles 
+Nombre de CU CU01: Autenticar usuario, cargar vistas 
+por rol y recuperar contraseña 
+Propósito Verificar la identidad de toda persona que 
+intente acceder al sistema de la clínica 
+mediante su correo electrónico registrado y 
+contraseña, habilitando una sesión segura 
+con los menús propios de su rol, facilitando 
+el cierre de sesión y permitiendo recuperar 
+el acceso en caso de extravío de clave. 
+Resumen El usuario ingresa su correo electrónico y 
+su contraseña en el formulario de 
+bienvenida. El sistema comprueba la 
+existencia de la cuenta, su estado activo y 
+la ausencia de bloqueos vigentes; tras 
+validar las credenciales de forma cifrada, 
+inicia la sesión, audita el ingreso en la 
+bitácora y redirige al panel correspondiente 
+según el rol asignado. 
+Actores Administrador, Recepcionista, Médico, 
+Paciente. 
+Actor iniciador Administrador, Recepcionista, Médico o 
+Paciente. 
+Precondición La cuenta del usuario debe estar 
+previamente registrada con un correo 
+electrónico único y encontrarse en estado 
+Activo. 
+Flujo principal Iniciar sesión: 
+ 
+1. El actor solicita ingresar a la aplicación 
+web de la clínica. 
+ 
+2. El sistema despliega el formulario 
+solicitando correo electrónico registrado y 
+contraseña. 
+ 
+3. El actor introduce su correo electrónico y 
+contraseña, y confirma la solicitud de 
+acceso. 
+ 
+4. El sistema valida que los campos no 
+estén vacíos y busca la cuenta vinculada al 
+correo proporcionado. 
+ 
+5. El sistema comprueba que la cuenta 
+exista y que su estado figure como Activo. 
+ 
+6. El sistema verifica que la cuenta no tenga 
+un bloqueo temporal por intentos fallidos 
+previos. 
+ 
+7. El sistema contrasta la contraseña 
+ingresada con la credencial resguardada de 
+forma cifrada. 
+ 
+8. Al confirmar su autenticidad, el sistema 
+reinicia el contador de intentos fallidos a 
+cero y registra la marca de fecha y hora del 
+acceso. 
+ 
+9. El sistema establece la sesión segura de 
+trabajo en el servidor. 
+ 
+10. El sistema identifica el rol institucional 
+asignado (Administrador, Recepcionista, 
+Médico o Paciente) y determina sus 
+permisos de operación. 
+ 
+11. El sistema registra el evento de inicio de 
+sesión exitoso en la bitácora de auditoría 
+(CU03). 
+ 
+12. El sistema redirige al usuario a su panel 
+de control principal, desplegando 
+exclusivamente los menús 
+correspondientes a su rol. 
+ 
+ 
+Cerrar sesión: 
+ 
+1. El actor presiona la opción "Cerrar 
+sesión" en la interfaz. 
+ 
+2. El sistema finaliza e invalida de forma 
+inmediata la sesión activa. 
+ 
+3. El sistema registra el cierre de sesión en 
+la bitácora (CU03) y redirige a la pantalla 
+pública de acceso. 
+Postcondición El actor cuenta con una sesión de trabajo 
+activa y segura con acceso restringido a las 
+vistas de su rol, o bien su sesión ha sido 
+completamente invalidada tras el cierre. 
+Excepción • E1 (Credenciales inválidas): Si el correo 
+no existe o la contraseña no coincide, el 
+sistema incrementa el contador de intentos 
+fallidos. Cada 3 fallos consecutivos, aplica 
+un bloqueo temporal progresivo (1 minuto, 5 
+minutos, 15 minutos), registra el fallo en la 
+bitácora y muestra el aviso general: "El 
+correo o la contraseña son incorrectos" sin 
+revelar datos internos por seguridad. 
+ 
+• E2 (Cuenta inactiva): Si la cuenta existe 
+pero está en estado Inactivo, el sistema 
+deniega el acceso e informa: "Cuenta 
+desactivada. Contacte a la administración 
+de la clínica". 
+ 
+• E3 (Bloqueo vigente): Si el usuario 
+intenta ingresar mientras persiste un 
+bloqueo temporal, el sistema muestra: 
+"Demasiados intentos fallidos. Intente 
+nuevamente en unos minutos" sin validar 
+credenciales. 
+ 
+• E4 (Acceso no autorizado sin sesión - 
+Prueba #9): Si cualquier persona intenta 
+acceder a una ruta interna escribiéndola 
+directamente en el navegador sin sesión 
+activa, el sistema deniega el acceso y la 
+redirige automáticamente al formulario de 
+ingreso. 
+ 
+• E5 (Recuperación de contraseña): Si el 
+actor presiona "¿Olvidó su contraseña?", 
+ingresa su correo electrónico; el sistema 
+valida su registro, genera un enlace 
+temporal seguro de restablecimiento con 
+vigencia de 30 minutos, lo envía a su correo 
+y le permite registrar una nueva contraseña. 
+CU02: Administrar usuarios, roles, módulos y permisos 
+Atributo Detalles 
+Nombre de CU CU02: Administrar usuarios, roles, 
+módulos y permisos 
+Propósito Permitir a la administración de la clínica 
+gestionar el padrón de cuentas de acceso 
+del personal y pacientes utilizando el correo 
+electrónico como credencial única, 
+asignando roles, configurando permisos 
+sobre los módulos funcionales y 
+controlando el estado de activación o 
+desactivación de cuentas. 
+Resumen El Administrador consulta la lista de 
+usuarios, registra nuevas cuentas o edita 
+las existentes ingresando nombre completo, 
+correo electrónico único, teléfono, 
+contraseña cifrada y rol asignado 
+(Administrador, Recepcionista, Médico, 
+Paciente). Si se requiere retirar el acceso a 
+un funcionario con historial, aplica la baja 
+lógica conservando intacta su trazabilidad. 
+Actores Administrador. 
+Actor iniciador Administrador. 
+Precondición El Administrador debe haber iniciado sesión 
+con credenciales válidas y privilegios de 
+administración activos (CU01). 
+Flujo principal Registrar nuevo usuario: 
+ 
+1. El Administrador accede al módulo de 
+administración de usuarios y roles. 
+ 
+2. El sistema despliega la lista general de 
+usuarios mostrando: nombre completo, 
+correo electrónico de acceso, rol asignado, 
+estado (Activo / Inactivo) y fecha de 
+registro. 
+ 
+3. El Administrador presiona "Nuevo 
+Usuario". 
+ 
+4. El sistema presenta el formulario 
+solicitando: nombres, apellidos, correo 
+electrónico único, teléfono, contraseña 
+inicial y selección del rol institucional. 
+ 
+5. El Administrador completa los datos 
+obligatorios, asigna el rol y confirma el 
+registro. 
+ 
+6. El sistema comprueba que el formato del 
+correo sea válido y verifica que no 
+pertenezca ya a otra cuenta registrada. 
+ 
+7. El sistema resguarda la contraseña 
+mediante cifrado seguro y almacena la 
+nueva cuenta con estado Activo. 
+ 
+8. El sistema asocia automáticamente la 
+matriz de permisos de módulos 
+correspondiente al rol asignado. 
+ 
+9. El sistema asienta el alta en la bitácora 
+de auditoría (CU03) y muestra mensaje de 
+confirmación. 
+ 
+ 
+Modificar permisos o dar de baja lógica: 
+ 
+1. El Administrador selecciona una cuenta 
+existente y elige "Modificar" o 
+"Desactivar". 
+ 
+2. Si edita permisos o rol, el sistema 
+actualiza la matriz de acceso de forma 
+inmediata. 
+ 
+3. Si confirma la desactivación, el sistema 
+cambia el estado de la cuenta a Inactivo, 
+revocando accesos futuros pero 
+preservando todo su historial. 
+Postcondición Cuenta de usuario registrada, actualizada o 
+dada de baja lógica en el sistema, con su 
+rol y permisos de acceso asignados. 
+Excepción • E1 (Correo electrónico duplicado): Si el 
+correo ya pertenece a otra cuenta, el 
+sistema rechaza la inserción y muestra: 
+"Este correo electrónico ya se encuentra 
+registrado en el sistema". 
+ 
+• E2 (Datos obligatorios incompletos o 
+inválidos - Prueba #10): Si faltan nombres, 
+correo o la contraseña no cumple la 
+longitud de seguridad mínima, el sistema 
+resalta los campos observados y detiene el 
+proceso. 
+ 
+• E3 (Intento de eliminación física con 
+historial - RN11): Si el Administrador 
+intenta borrar físicamente una cuenta con 
+historial de atenciones o auditoría, el 
+sistema bloquea la eliminación y aplica 
+únicamente la baja lógica a estado 
+Inactivo. 
+CU03: Consultar y auditar bitácora de eventos del sistema 
+Atributo Detalles 
+Nombre de CU CU03: Consultar y auditar bitácora de 
+eventos del sistema 
+Propósito Supervisar y fiscalizar el registro 
+cronológico e inmutable de todas las 
+operaciones críticas ejecutadas por los 
+usuarios dentro de la plataforma para 
+asegurar la trazabilidad institucional y el 
+cumplimiento de las normativas de 
+seguridad de la información. 
+Resumen El sistema intercepta y almacena 
+automáticamente de forma continua cada 
+evento relevante (inicios/cierres de sesión, 
+altas, ediciones, cancelaciones de citas, 
+pagos y bajas lógicas) guardando correo 
+del usuario, rol, fecha, hora exacta, módulo 
+y descripción. El Administrador accede a 
+este visor para auditar operaciones 
+mediante filtros avanzados. 
+Actores Administrador. 
+Actor iniciador Administrador. 
+Precondición El Administrador debe tener sesión activa 
+(CU01) y deben existir eventos previamente 
+asentados en la bitácora. 
+Flujo principal 1. De forma continua e invisible para los 
+usuarios, ante cada acción importante en el 
+sistema, se crea automáticamente un 
+registro de auditoría con: fecha, hora, 
+correo del usuario responsable, rol, módulo 
+intervenido y detalle de la operación. 
+ 
+2. El Administrador ingresa al módulo 
+"Bitácora y Auditoría del Sistema". 
+ 
+3. El sistema muestra los eventos más 
+recientes ordenados de forma cronológica 
+descendente. 
+ 
+4. El Administrador define criterios de 
+búsqueda en el panel de filtros: rango de 
+fechas (desde / hasta), correo del usuario, 
+rol o módulo específico. 
+ 
+5. El Administrador presiona "Buscar". 
+ 
+6. El sistema valida el período ingresado y 
+recupera todos los eventos coincidentes. 
+ 
+7. El sistema presenta la tabla de 
+resultados detallando: número correlativo, 
+fecha y hora, correo electrónico, rol, 
+módulo, tipo de acción y resumen del 
+evento. 
+ 
+8. El Administrador selecciona un registro 
+específico para inspeccionar el detalle 
+técnico de la operación auditada. 
+Postcondición El Administrador consulta la información 
+histórica de auditoría en modo de solo 
+lectura, sin que ningún usuario pueda 
+modificar ni eliminar los registros de la 
+bitácora. 
+Excepción • E1 (Rango de fechas inválido): Si la 
+fecha final es menor a la fecha inicial, el 
+sistema impide la búsqueda y solicita 
+ingresar un rango coherente. 
+ 
+• E2 (Sin coincidencias): Si ningún evento 
+cumple con los filtros seleccionados, el 
+sistema muestra: "No se encontraron 
+eventos registrados para los criterios de 
+búsqueda ingresados". 
+CU04: Gestionar médicos y especialidades 
+Atributo Detalles 
+Nombre de CU CU04: Gestionar médicos y 
+especialidades 
+Propósito Administrar el catálogo de especialidades 
+que ofrece la clínica (definiendo nombre 
+normalizado y reglas de rango etario 
+permitido) y registrar a los médicos con su 
+matrícula profesional, correo electrónico y 
+áreas clínicas asociadas, controlando su 
+estado activo o inactivo. 
+Resumen El Administrador da de alta o modifica 
+especialidades médicas (ej. Medicina 
+General, Pediatría, Geriatría, Cardiología) 
+configurando sus límites de edad 
+permitidos, y gestiona el padrón de 
+profesionales médicos con su código único, 
+matrícula, correo de contacto y 
+especialidades asignadas, aplicando bajas 
+lógicas cuando dejan de atender en la 
+clínica. 
+Actores Administrador. 
+Actor iniciador Administrador. 
+Precondición El Administrador debe haber iniciado sesión 
+con privilegios vigentes (CU01). 
+Flujo principal Gestionar especialidades médicas 
+(RF04): 
+ 
+1. El Administrador accede a la sección 
+"Especialidades Médicas". 
+ 
+2. El sistema despliega el catálogo actual 
+con: código, nombre, descripción, rango de 
+edad (edad mínima y máxima), arancel de 
+consulta y estado (Activo / Inactivo). 
+ 
+3. El Administrador presiona "Nueva 
+Especialidad", ingresa el nombre (ej. 
+Pediatría, Geriatría), descripción, rango de 
+edad correspondiente (ej. Pediatría: 0 a 13 
+años; Geriatría: 60 años en adelante; 
+Medicina General: 0 a 120 años) y arancel. 
+ 
+4. El sistema valida que el nombre 
+normalizado no exista previamente y 
+guarda la especialidad con estado Activo. 
+ 
+ 
+Registrar y gestionar médicos (RF03): 
+ 
+5. El Administrador accede a la sección 
+"Padrón Médico" y presiona "Nuevo 
+Médico". 
+ 
+6. El sistema muestra el formulario 
+solicitando: código del médico, número de 
+registro o matrícula profesional, nombres, 
+apellidos, teléfono, correo electrónico, 
+selección de una o varias especialidades 
+activas y estado inicial. 
+ 
+7. El Administrador completa los datos 
+requeridos, vincula las especialidades y 
+confirma el guardado. 
+ 
+8. El sistema valida que la matrícula 
+profesional, el código del médico y el correo 
+electrónico sean únicos (RN02). 
+ 
+9. El sistema guarda la ficha del profesional, 
+asocia sus especialidades, habilita su 
+cuenta de acceso mediante su correo 
+electrónico y lo deja en estado Activo listo 
+para la asignación de horarios (CU05). 
+ 
+10. El Administrador puede buscar médicos 
+por nombre o especialidad, editar su 
+información o cambiar su estado a Inactivo 
+cuando concluya sus funciones en la 
+clínica. 
+Postcondición Especialidades médicas y profesionales 
+registrados o actualizados de forma 
+permanente en el sistema, disponibles para 
+la planificación de horarios y reserva de 
+citas cuando su estado es activo. 
+Excepción • E1 (Especialidad duplicada - RF04): Si 
+el Administrador intenta registrar una 
+especialidad con un nombre normalizado ya 
+existente (sin importar mayúsculas o 
+acentos), el sistema rechaza el guardado y 
+muestra: "Ya existe una especialidad 
+registrada con este nombre". 
+ 
+• E2 (Matrícula, código o correo 
+duplicado - RN02): Si el código, la 
+matrícula médica o el correo electrónico ya 
+pertenecen a otro registro, el sistema 
+impide el guardado e indica el campo en 
+conflicto. 
+ 
+• E3 (Baja lógica de médico con citas 
+históricas - RF03, RN04, RN11): Si se 
+solicita dar de baja a un médico con citas 
+históricas o futuras, el sistema prohíbe su 
+eliminación física, actualiza su estado a 
+Inactivo (impidiendo que reciba nuevas 
+citas) y solicita reprogramar sus turnos 
+futuros pendientes. 
+CU05: Configurar horarios de atención y disponibilidad médica 
+Atributo Detalles 
+Nombre de CU CU05: Configurar horarios de atención y 
+disponibilidad médica 
+Propósito Parametrizar los turnos de atención 
+semanal de los médicos activos y definir la 
+duración en minutos de cada consulta para 
+calcular automáticamente los bloques de 
+atención y cupos disponibles, evitando 
+sobreposiciones y permitiendo registrar 
+bloqueos especiales o feriados. 
+Resumen El Administrador selecciona a un médico 
+activo, configura sus turnos por día de la 
+semana (hora de inicio, hora de fin y 
+duración por cita, ej. 15, 20 o 30 minutos) y 
+programa fechas de feriados o bloqueos. El 
+sistema valida la coherencia horaria, 
+comprueba que no existan cruces de 
+horario para el mismo médico y divide el 
+turno en bloques disponibles. 
+Actores Administrador. 
+Actor iniciador Administrador. 
+Precondición El Administrador debe tener sesión activa 
+(CU01) y el médico seleccionado debe 
+encontrarse en estado Activo con su 
+especialidad vinculada (CU04). 
+Flujo principal 1. El Administrador accede al módulo 
+"Gestión de Horarios de Atención". 
+ 
+2. El sistema despliega el listado de 
+médicos activos mostrando sus turnos 
+vigentes organizados por día de la semana. 
+ 
+3. El Administrador selecciona al médico 
+que desea configurar y presiona "Agregar 
+Horario". 
+ 
+4. El sistema presenta el formulario 
+solicitando: día de la semana (Lunes a 
+Sábado), hora inicial del turno (ej. 08:00), 
+hora final del turno (ej. 12:00), duración por 
+cita en minutos (15, 20 o 30 minutos) y 
+asignación opcional de consultorio físico. 
+ 
+5. Si corresponde, el Administrador registra 
+fechas específicas de feriados 
+institucionales o bloqueos especiales en los 
+que el médico no atenderá. 
+ 
+6. El Administrador confirma la 
+configuración del turno. 
+ 
+7. El sistema verifica que la hora final sea 
+estrictamente posterior a la inicial y que los 
+intervalos seleccionados sean válidos 
+(RF05, RN08). 
+ 
+8. El sistema comprueba en tiempo real que 
+el médico no posea otro horario que se 
+superponga en ese mismo día y franja 
+horaria. 
+ 
+9. El sistema calcula automáticamente la 
+cantidad máxima de cupos disponibles 
+dividiendo el tiempo total entre los minutos 
+de duración configurados. 
+ 
+10. El sistema almacena el horario de 
+disponibilidad y actualiza la visualización de 
+la agenda semanal del profesional, dejando 
+los bloques listos para la programación de 
+citas (CU07). 
+Postcondición La franja de atención, intervalos de consulta 
+y cupos del médico quedan registrados en 
+el sistema y habilitados para la reserva de 
+citas médicas. 
+Excepción • E1 (Hora final menor o igual a hora 
+inicial - RF05 / Prueba #10): El sistema 
+rechaza el formulario y muestra: "La hora 
+final de atención debe ser estrictamente 
+posterior a la hora inicial". 
+ 
+• E2 (Superposición de horarios para el 
+mismo médico): Si el turno ingresado 
+colisiona con otro horario registrado para el 
+mismo médico en ese mismo día, el 
+sistema bloquea el guardado e informa el 
+cruce horario. 
+ 
+• E3 (Médico inactivo - RN04): Si se 
+intenta configurar turnos para un médico en 
+estado Inactivo, el sistema impide la 
+operación. 
+ 
+• E4 (Eliminación de turno con citas 
+activas): Si se intenta borrar un horario que 
+ya cuenta con citas reservadas, el sistema 
+bloquea la acción y exige gestionar primero 
+la contingencia o reprogramación (CU07, 
+CU09). 
+CU06: Gestionar pacientes y auto-registro 
+Atributo Detalles 
+Nombre de CU CU06: Gestionar pacientes y auto-
+registro 
+Propósito Administrar el padrón de pacientes de la 
+clínica garantizando la unicidad estricta del 
+documento de identidad (CI) y del correo 
+electrónico, permitiendo el auto-registro 
+ciudadano y calculando automáticamente la 
+edad del paciente a partir de su fecha de 
+nacimiento. 
+Resumen La Recepcionista, el Administrador o el 
+propio Paciente completan los datos 
+personales, demográficos y de contacto en 
+el formulario de registro. El sistema valida la 
+no duplicidad del CI y del correo, calcula la 
+edad exacta actual, asigna un código único 
+de afiliación (PAC-XXXX) y guarda la ficha 
+personal con estado Activo, habilitando 
+además la búsqueda, modificación o baja 
+lógica. 
+Actores Recepcionista, Administrador, Paciente. 
+Actor iniciador Recepcionista, Administrador o Paciente. 
+Precondición Para el personal de la clínica, contar con 
+sesión activa (CU01); para el Paciente 
+nuevo, acceder a la vista pública de auto-
+registro en la plataforma web. 
+Flujo principal Registrar paciente (Prueba #1 y RF02): 
+ 
+1. El actor ingresa al formulario "Registro 
+de Pacientes" (desde el panel de 
+recepción/administración o desde la opción 
+pública de auto-registro del portal). 
+ 
+2. El sistema despliega el formulario 
+solicitando: documento de identidad (CI), 
+nombres, apellidos, sexo, fecha de 
+nacimiento, teléfono de contacto, correo 
+electrónico (que servirá como credencial de 
+acceso) y dirección domiciliaria (más 
+contraseña si es auto-registro). 
+ 
+3. El actor llena todos los campos 
+obligatorios y confirma el envío. 
+ 
+4. El sistema valida que los campos no 
+estén vacíos y que la fecha de nacimiento 
+no sea futura. 
+ 
+5. A partir de la fecha de nacimiento 
+ingresada, el sistema calcula de manera 
+automática la edad actual del paciente para 
+la posterior validación de reglas de 
+especialidad médica. 
+ 
+6. El sistema comprueba que el número de 
+CI y el correo electrónico no se encuentren 
+registrados previamente para ninguna otra 
+persona (RF02, RN01). 
+ 
+7. El sistema genera un código identificador 
+único de paciente con formato correlativo 
+(PAC-0001) y registra la ficha con estado 
+Activo (Prueba #1). 
+ 
+8. Si la solicitud proviene del auto-registro 
+del Paciente, se crea de forma concurrente 
+su cuenta de usuario vinculada a su correo 
+electrónico y contraseña elegida. 
+ 
+9. El sistema muestra mensaje de 
+confirmación y despliega la ficha creada. 
+ 
+ 
+Buscar, modificar y desactivar paciente: 
+ 
+1. La Recepcionista o el Administrador 
+consultan el padrón y buscan pacientes por 
+CI, nombre, apellido o correo. 
+ 
+2. El sistema muestra de inmediato las 
+coincidencias encontradas. 
+ 
+3. El actor puede editar los datos de 
+contacto o aplicar la baja lógica pasando el 
+estado a Inactivo sin eliminar su historial 
+de citas (RN11). 
+Postcondición El paciente queda registrado o actualizado 
+en el sistema con código único, CI y correo 
+electrónico validados sin duplicidad y edad 
+calculada, habilitado para reservar citas 
+médicas (CU07). 
+Excepción • E1 (Documento de identidad CI 
+duplicado - Prueba #2, RF02, RN01): Si el 
+CI ingresado ya existe en el sistema, el 
+sistema rechaza la operación e informa: "Ya 
+existe un paciente registrado con este 
+documento de identidad (CI)". 
+ 
+• E2 (Correo electrónico duplicado): Si el 
+correo ya pertenece a otra cuenta, el 
+sistema bloquea el guardado e indica: "Este 
+correo electrónico ya se encuentra 
+registrado". 
+ 
+• E3 (Campos obligatorios vacíos o 
+formato erróneo - Prueba #10): El sistema 
+resalta los campos faltantes o con formato 
+incorrecto y no permite enviar el formulario. 
+ 
+• E4 (Intento de eliminación física con 
+citas - RN11): Si se solicita borrar un 
+paciente que tiene citas históricas, el 
+sistema bloquea el borrado físico y aplica 
+únicamente la desactivación lógica (estado 
+= 'Inactivo'). 
+CU07: Programar, reprogramar y cancelar citas médicas 
+Atributo Detalles 
+Nombre de CU CU07: Programar, reprogramar y 
+cancelar citas médicas 
+Propósito Gestionar el ciclo de vida de la reserva de 
+citas médicas, su reprogramación y 
+cancelación, garantizando la no 
+superposición de horarios, validando la 
+coherencia de edad con la especialidad y 
+liberando el cupo inmediatamente cuando 
+una cita se cancela. 
+Resumen La Recepcionista o el Paciente eligen al 
+paciente, la especialidad médica, el médico 
+activo, la fecha futura y un bloque horario 
+libre. El sistema valida en tiempo real la 
+disponibilidad y la edad del paciente, 
+comprueba que el cupo siga disponible, 
+asigna un código correlativo único (CM-
+XXXX) y guarda la reserva en estado 
+Programada. Permite también reprogramar 
+turnos o cancelarlos liberando el cupo sin 
+borrar el antecedente histórico. 
+Actores Recepcionista, Paciente. 
+Actor iniciador Recepcionista o Paciente. 
+Precondición El paciente debe encontrarse registrado y 
+en estado Activo (CU06), y deben existir 
+médicos activos (CU04) con horarios 
+configurados (CU05). 
+Flujo principal Programar nueva cita médica (Prueba #3, 
+RF06, RF07): 
+ 
+1. El actor ingresa al módulo de 
+programación de citas. 
+ 
+2. Si es la Recepcionista, busca al paciente 
+por CI, correo o nombre; si es el Paciente 
+autenticado, el sistema asocia de forma 
+automática su ficha. 
+ 
+3. El actor selecciona la especialidad 
+médica solicitada. 
+ 
+4. El sistema valida de inmediato que la 
+edad calculada del paciente cumpla con el 
+rango etario permitido por la especialidad 
+seleccionada (ej. Pediatría de 0 a 13 años; 
+Geriatría de 60 años en adelante). 
+ 
+5. El sistema presenta el listado de médicos 
+activos pertenecientes a esa especialidad 
+(RN04). 
+ 
+6. El actor selecciona al médico y elige una 
+fecha de atención en el calendario 
+interactivo. 
+ 
+7. El sistema verifica que la fecha elegida 
+sea actual o futura (RN06) y que el médico 
+atienda en ese día de la semana (RN05). 
+ 
+8. El sistema consulta los bloques del turno 
+y renderiza en pantalla únicamente los 
+horarios disponibles que tienen cupo libre 
+y que no están bloqueados por cirugías o 
+feriados. 
+ 
+9. El actor selecciona el bloque horario (ej. 
+09:00 - 09:30), ingresa el motivo breve de 
+consulta y presiona "Confirmar Cita". 
+ 
+10. Antes de consolidar la reserva, el 
+sistema verifica nuevamente en 
+milisegundos que el horario siga libre y que 
+ningún otro usuario lo haya tomado en 
+simultáneo (RF06, RF07, RN07, RN13). 
+ 
+11. El sistema genera el código único de 
+cita (CM-0001), registra la cita con estado 
+inicial Programada, bloquea el horario y 
+muestra el comprobante de reserva en 
+pantalla (Prueba #3). 
+ 
+ 
+Reprogramar cita médica (RF08): 
+ 
+1. El actor selecciona una cita en estado 
+Programada y presiona "Reprogramar". 
+ 
+2. El sistema muestra las nuevas fechas y 
+horas disponibles del médico. 
+ 
+3. El actor elige el nuevo turno libre y 
+confirma; el sistema verifica la ausencia de 
+conflictos, actualiza la fecha/hora, libera el 
+horario anterior y mantiene la trazabilidad 
+del cambio. 
+ 
+ 
+Cancelar cita médica (Prueba #6, RF09): 
+ 
+1. El actor selecciona una cita programada, 
+presiona "Cancelar Cita" e ingresa el 
+motivo de la cancelación. 
+ 
+2. El sistema actualiza el estado a 
+Cancelada, libera inmediatamente el 
+horario para que otro paciente pueda 
+reservarlo y conserva el registro en el 
+historial (Prueba #6, RN09, RN10). 
+Postcondición Cita médica creada con código único en 
+estado Programada bloqueando el horario, 
+o bien reprogramada a un nuevo turno 
+válido, o cancelada con liberación inmediata 
+del cupo sin eliminar su registro histórico. 
+Excepción • E1 (Colisión / Cita duplicada - Prueba 
+#4, RF07, RN07): Si otro usuario reservó el 
+mismo médico, fecha y horario 
+simultáneamente, el sistema bloquea el 
+cruce, rechaza la operación e informa: "El 
+horario seleccionado ya fue reservado por 
+otro usuario. Por favor elija otro bloque 
+disponible". 
+ 
+• E2 (Reserva en fecha pasada o fuera de 
+horario - Prueba #5, RN05, RN06): Si se 
+intenta registrar una cita en un día anterior 
+a la fecha actual o fuera del horario 
+configurado para el médico, el sistema 
+rechaza la solicitud. 
+ 
+• E3 (Edad del paciente incompatible con 
+la especialidad): Si la edad del paciente no 
+corresponde a la especialidad elegida, el 
+sistema bloquea la reserva e informa: "La 
+edad del paciente no corresponde al rango 
+de atención de la especialidad 
+seleccionada". 
+ 
+• E4 (Intento de reprogramar o cancelar 
+cita ya atendida - RF08, RF09, RN10): Si 
+la cita ya tiene estado Atendida, el sistema 
+impide cancelarla o reprogramarla 
+preservando la integridad del historial 
+clínico. 
+CU08: Consultar historial / Kardex de citas del paciente 
+Atributo Detalles 
+Nombre de CU CU08: Consultar historial / Kardex de 
+citas del paciente 
+Propósito Proveer una consulta rápida, cronológica y 
+completa de todas las citas médicas 
+históricas y actuales de un paciente, 
+garantizando la trazabilidad integral de sus 
+atenciones, cancelaciones e inasistencias. 
+Resumen El Paciente (desde su perfil personal), la 
+Recepcionista o el Médico acceden al 
+módulo de Historial de Citas. El sistema 
+recupera de forma inmediata el Kardex 
+completo con todas las citas pasadas, 
+pendientes y canceladas asociadas al 
+paciente, detallando fecha, hora, médico, 
+especialidad, motivo, estado y fecha de 
+registro. 
+Actores Paciente, Recepcionista, Médico. 
+Actor iniciador Paciente, Recepcionista o Médico. 
+Precondición El actor debe tener sesión activa (CU01) y 
+el paciente consultado debe existir 
+registrado en el sistema (CU06). 
+Flujo principal 1. El actor ingresa a la opción "Historial de 
+Citas / Kardex" desde su panel. 
+ 
+2. Si el actor es la Recepcionista o el 
+Médico, busca al paciente por CI, correo 
+electrónico o apellidos y selecciona su 
+expediente; si el actor es el Paciente 
+autenticado, el sistema carga directamente 
+su propio historial. 
+ 
+3. El sistema recupera la totalidad de citas 
+vinculadas al paciente sin omitir citas 
+pasadas ni canceladas (RF12, RN10). 
+ 
+4. El sistema presenta la tabla cronológica 
+ordenada mostrando para cada cita: código 
+de cita (CM-XXXX), fecha y hora del turno, 
+nombre del médico tratante, especialidad 
+médica, motivo de consulta, estado actual 
+(Programada, Confirmada, Atendida, 
+Cancelada, Inasistencia) y fecha en que 
+se registró la cita (Prueba #7). 
+ 
+5. El actor puede filtrar la visualización por 
+rango de fechas, especialidad médica o 
+estado de la consulta para localizar un 
+registro con rapidez. 
+Postcondición El actor visualiza el historial cronológico 
+completo de citas del paciente sin pérdida 
+de trazabilidad histórica. 
+Excepción • E1 (Paciente sin citas registradas): Si el 
+paciente no cuenta con registros de citas, el 
+sistema muestra sus datos personales con 
+el aviso: "El paciente aún no registra citas 
+médicas en su historial". 
+ 
+• E2 (Acceso no autorizado a expediente 
+ajeno - RN12): Si un usuario con rol 
+Paciente intenta forzar la visualización de 
+las citas de otro paciente, el sistema 
+bloquea la consulta por resguardo de 
+privacidad y confidencialidad. 
+CU09: Gestionar recordatorios y reprogramación masiva por 
+emergencia médica 
+Atributo Detalles 
+Nombre de CU CU09: Gestionar recordatorios y 
+reprogramación masiva por emergencia 
+médica 
+Propósito Enviar recordatorios automáticos por correo 
+electrónico a los pacientes sobre sus 
+próximas consultas y, ante una cirugía o 
+emergencia médica imprevista del médico, 
+trasladar automáticamente las fichas 
+afectadas al siguiente turno disponible y 
+notificar de inmediato a los pacientes para 
+evitar que acudan en vano a la clínica. 
+Resumen El sistema envía recordatorios preventivos 
+por correo electrónico a los pacientes 
+citados y cuenta con una función de 
+contingencia donde la Recepcionista, el 
+Médico o el Administrador declaran la 
+ausencia imprevista del profesional por 
+cirugía de urgencia. El sistema bloquea ese 
+horario, pasa en bloque todas las citas 
+afectadas al siguiente turno libre del médico 
+y despacha un correo de alerta a cada 
+paciente. 
+Actores Administrador, Recepcionista, Médico, 
+Paciente. 
+Actor iniciador Recepcionista, Médico o Administrador 
+(para declarar la emergencia) / Proceso 
+automatizado del sistema (para 
+recordatorios rutinarios). 
+Precondición Deben existir citas médicas en estado 
+Programada o Confirmada (CU07) y 
+pacientes con correo electrónico válido 
+(CU06). 
+Flujo principal Reprogramación masiva por cirugía o 
+emergencia médica: 
+ 
+1. Ante una cirugía o emergencia médica no 
+planificada de un profesional, el actor 
+facultado accede al módulo 
+"Contingencias Médicas". 
+ 
+2. Selecciona al médico afectado, la fecha y 
+el turno que no podrá ser atendido, e 
+ingresa el motivo (ej. "Médico en cirugía de 
+emergencia"). 
+ 
+3. El actor confirma la operación 
+presionando "Trasladar Turno y Notificar 
+Pacientes". 
+ 
+4. El sistema registra el bloqueo de agenda 
+para esa fecha y rango de horas impidiendo 
+nuevas reservas en ese bloque. 
+ 
+5. El sistema recupera todas las citas en 
+estado Programada y Confirmada 
+asignadas a ese turno. 
+ 
+6. El sistema busca de forma automática el 
+siguiente turno de atención disponible 
+configurado para ese médico (CU05) y 
+traslada en bloque las fichas asignándoles 
+sus nuevos horarios correlativos sin generar 
+superposiciones. 
+ 
+7. El sistema despacha de manera 
+inmediata una notificación al correo 
+electrónico de cada paciente afectado 
+informando que el médico está en 
+cirugía/emergencia y comunicándole la 
+nueva fecha y hora asignadas, evitando 
+traslados innecesarios a la clínica. 
+ 
+8. El sistema asienta el traslado masivo en 
+la bitácora (CU03) y muestra el resumen de 
+citas reprogramadas. 
+ 
+ 
+Recordatorios automáticos de consulta: 
+ 
+1. El sistema identifica diariamente las citas 
+programadas para las siguientes 24 horas. 
+ 
+2. Envía automáticamente un correo 
+electrónico de recordatorio a cada paciente 
+con los datos del turno (código, médico, 
+especialidad, fecha y hora). 
+Postcondición Las citas afectadas quedan reprogramadas 
+en el siguiente turno disponible del médico 
+y los pacientes reciben en su correo la 
+alerta oportuna (o su recordatorio 
+preventivo). 
+Excepción • E1 (Turno sin pacientes agendados): Si 
+el turno declarado en emergencia no tenía 
+citas programadas, el sistema únicamente 
+bloquea el horario sin despachar correos. 
+ 
+• E2 (Capacidad insuficiente en el 
+siguiente turno inmediato): Si las citas 
+superan los cupos libres del siguiente turno 
+del médico, el sistema ubica las restantes 
+en el turno subsiguiente libre o emite una 
+alerta a Recepción para reubicación manual 
+asistida. 
+ 
+• E3 (Fallo en la entrega de correo): Si 
+algún correo de paciente rebota, el sistema 
+lo resalta en pantalla como "Pendiente de 
+aviso telefónico" para que Recepción le 
+informe por teléfono. 
+CICLO DE DESARROLLO #2: Atención 
+Clínica, Pagos, Autoservicio y 
+Reportería con IA (CU10 al CU18) 
+CU10: Administrar perfil clínico y antecedentes del paciente 
+Atributo Detalles 
+Nombre de CU CU10: Administrar perfil clínico y 
+antecedentes del paciente 
+Propósito Centralizar, actualizar y consultar de forma 
+confidencial la información médica básica 
+del paciente (tipo de sangre, alergias, 
+enfermedades crónicas, medicamentos 
+habituales) y sus datos de contacto de 
+emergencia dentro de su expediente clínico. 
+Resumen El Paciente, la Recepcionista o el Médico 
+acceden al perfil clínico del paciente para 
+registrar o mantener actualizados sus 
+antecedentes médicos, alergias a fármacos 
+o alimentos, tratamientos crónicos y datos 
+del contacto de emergencia (nombre, 
+parentesco y teléfono), dejándolos 
+disponibles para consulta del médico en 
+consultorio. 
+Actores Paciente, Recepcionista, Médico. 
+Actor iniciador Paciente, Recepcionista o Médico. 
+Precondición El actor debe tener sesión activa (CU01) y 
+el paciente debe estar registrado en el 
+sistema (CU06). 
+Flujo principal 1. El actor ingresa a la opción "Perfil 
+Clínico del Paciente". 
+ 
+2. El sistema presenta la ficha del paciente 
+con sus datos demográficos y habilita las 
+secciones de antecedentes clínicos y 
+contacto de emergencia. 
+ 
+3. En la sección Información Médica, el 
+actor registra o actualiza: grupo sanguíneo 
+y factor RH (A+, A-, B+, B-, AB+, AB-, O+, 
+O-), alergias conocidas (medicamentosas o 
+alimentarias), enfermedades crónicas o de 
+base (ej. diabetes, hipertensión), 
+medicamentos de uso frecuente y 
+antecedentes relevantes. 
+ 
+4. En la sección Contacto de Emergencia, 
+el actor ingresa o actualiza: nombre 
+completo de la persona de contacto, 
+parentesco y número de teléfono de 
+localización inmediata. 
+ 
+5. Si quien opera es el propio Paciente, 
+puede configurar también sus preferencias 
+de avisos por correo y privacidad de cuenta. 
+ 
+6. El actor presiona "Guardar Perfil 
+Clínico". 
+ 
+7. El sistema valida los datos obligatorios, 
+almacena la información de forma segura 
+vinculándola al expediente del paciente y 
+muestra confirmación en pantalla. 
+ 
+8. El sistema registra la actualización en la 
+bitácora (CU03). 
+Postcondición El expediente del paciente cuenta con su 
+información médica y contacto de 
+emergencia actualizados, accesibles para el 
+médico durante la consulta (CU11, CU12). 
+Excepción • E1 (Contacto de emergencia 
+incompleto): Si se registra un contacto de 
+emergencia sin su número de teléfono o 
+nombre, el sistema solicita completar la 
+información antes de guardar. 
+ 
+• E2 (Acceso no autorizado a datos de 
+salud sensibles - RN12): Si un usuario no 
+autorizado intenta visualizar antecedentes 
+médicos confidenciales fuera de su rol, el 
+sistema bloquea la visualización para 
+proteger la privacidad clínica. 
+CU11: Consultar agenda médica y controlar estados de atención 
+Atributo Detalles 
+Nombre de CU CU11: Consultar agenda médica y 
+controlar estados de atención 
+Propósito Permitir al Médico y a la Recepcionista 
+consultar las citas programadas en la 
+agenda médica filtrando por fecha, médico 
+y estado, y gestionar las transiciones 
+válidas de estado de cada consulta 
+(Programada, Confirmada, Atendida, 
+Inasistencia). 
+Resumen El actor consulta la agenda filtrando por 
+fecha y médico, revisa la lista de pacientes 
+citados con sus horarios, antecedentes 
+clínicos y motivos de consulta, y actualiza el 
+estado de cada cita conforme el paciente 
+confirma su llegada, es atendido en 
+consultorio o se registra su inasistencia al 
+vencer el turno. 
+Actores Médico, Recepcionista. 
+Actor iniciador Médico o Recepcionista. 
+Precondición El actor debe contar con sesión activa 
+(CU01) y el médico debe tener citas 
+agendadas en el sistema (CU07). 
+Flujo principal Consultar agenda médica (Prueba #8, 
+RF11): 
+ 
+1. El actor accede al módulo "Agenda 
+Médica y Control de Asistencia". 
+ 
+2. El actor aplica filtros de consulta por: 
+fecha específica (por defecto el día actual), 
+médico (si ingresa el Médico, carga 
+directamente su propia agenda) y estado de 
+la cita. 
+ 
+3. El sistema despliega la lista ordenada de 
+citas del turno mostrando: hora del turno, 
+código de cita, nombre y edad del paciente, 
+especialidad, motivo de consulta, estado 
+actual y acceso rápido a los antecedentes 
+clínicos (CU10) para el Médico. 
+ 
+ 
+Controlar estados de atención (RF10): 
+ 
+4. Cuando el paciente se presenta en 
+recepción, la Recepcionista selecciona la 
+cita y actualiza su estado de Programada a 
+Confirmada. 
+ 
+5. Al realizarse la consulta en consultorio, el 
+Médico atiende al paciente y marca la cita 
+como Atendida. 
+ 
+6. Si concluye el turno y el paciente no se 
+presentó, el actor marca el estado de la cita 
+como Inasistencia. 
+ 
+7. El sistema verifica que la transición de 
+estado sea válida, almacena el nuevo 
+estado con fecha y hora, registra el cambio 
+en la bitácora (CU03) y actualiza la agenda 
+en pantalla. 
+Postcondición La agenda médica se visualiza con los 
+filtros aplicados y los estados de asistencia 
+o atención quedan actualizados en el 
+historial (RN10). 
+Excepción • E1 (Transición de estado no permitida - 
+RF10): Si un usuario intenta marcar una 
+cita Cancelada como Atendida, o cancelar 
+una cita ya Atendida, el sistema bloquea la 
+acción e informa: "Cambio de estado no 
+permitido según el flujo de atención clínica". 
+ 
+• E2 (Sin citas para la fecha consultada): 
+Si el médico no tiene pacientes agendados 
+en la fecha seleccionada, el sistema 
+muestra los bloques de horario libres e 
+indica que no hay citas registradas para ese 
+día. 
+CU12: Emitir receta médica digital y orden de exámenes 
+Atributo Detalles 
+Nombre de CU CU12: Emitir receta médica digital y 
+orden de exámenes 
+Propósito Permitir al Médico registrar el diagnóstico 
+de la consulta y emitir una receta de 
+medicamentos y/u órdenes de estudios 
+clínicos en formato digital descargable en 
+PDF con código QR verificable para el 
+paciente. 
+Resumen Al atender una cita médica, el Médico 
+ingresa el diagnóstico, prescribe 
+medicamentos (dosis, frecuencia, duración) 
+y/o exámenes de laboratorio; el sistema 
+contrasta la prescripción con las alergias 
+del paciente registradas en su perfil clínico, 
+guarda la orden y genera un documento 
+PDF oficial descargable por el Paciente. 
+Actores Médico, Paciente. 
+Actor iniciador Médico. 
+Precondición El Médico debe tener sesión activa (CU01) 
+y la cita médica debe encontrarse en curso 
+o en estado Atendida (CU11). 
+Flujo principal 1. Desde la vista de atención de la cita 
+médica (CU11), el Médico presiona "Emitir 
+Receta y Orden de Exámenes". 
+ 
+2. El sistema presenta el formulario de 
+prescripción mostrando en la parte superior 
+los datos del paciente y una alerta visible 
+con sus alergias y enfermedades crónicas 
+registradas en su perfil clínico (CU10). 
+ 
+3. El Médico redacta el diagnóstico o 
+impresión clínica de la consulta. 
+ 
+4. El Médico añade cada medicamento 
+recetado indicando: nombre del fármaco, 
+presentación, dosis, frecuencia (ej. cada 8 
+horas) y días de tratamiento. 
+ 
+5. Si el paciente requiere estudios 
+complementarios, el Médico ingresa las 
+órdenes de laboratorio o imagenología con 
+sus indicaciones de preparación. 
+ 
+6. El Médico confirma la emisión de la 
+receta. 
+ 
+7. El sistema valida los campos obligatorios 
+y comprueba que ningún medicamento 
+prescrito coincida con las alergias 
+conocidas del paciente. 
+ 
+8. El sistema almacena la receta y la orden 
+médica vinculadas al código único de la 
+cita. 
+ 
+9. El sistema genera el documento oficial en 
+formato PDF con membrete de la clínica, 
+datos y matrícula del médico, detalle de la 
+prescripción y un código QR de verificación. 
+ 
+10. El Paciente accede a su historial de 
+citas (CU08) y descarga o imprime el PDF 
+de su receta médica. 
+Postcondición La receta médica digital y orden de estudios 
+quedan registradas en el historial de la cita 
+y disponibles en documento PDF verificable 
+para el paciente. 
+Excepción • E1 (Alerta por alergia a medicamento): 
+Si el medicamento ingresado coincide con 
+una alergia registrada en el perfil del 
+paciente (CU10), el sistema emite una 
+advertencia inmediata en pantalla para que 
+el Médico sustituya el fármaco o confirme 
+bajo justificación clínica. 
+ 
+• E2 (Cita no atendida): Si la cita se 
+encuentra en estado Cancelada o 
+Inasistencia, el sistema mantiene 
+deshabilitada la opción de emitir recetas. 
+CU13: Registrar derivación médica / interconsulta a otra especialidad 
+Atributo Detalles 
+Nombre de CU CU13: Registrar derivación médica / 
+interconsulta a otra especialidad 
+Propósito Permitir que el médico tratante transfiera 
+formalmente a un paciente hacia otra 
+especialidad médica dentro de la clínica 
+tras su evaluación en consultorio, facilitando 
+el agendamiento directo de la nueva 
+consulta especializada. 
+Resumen Durante la atención de una consulta, el 
+Médico emite una orden de interconsulta 
+interna indicando la especialidad médica de 
+destino, el nivel de prioridad y el motivo 
+clínico; el sistema guarda la derivación y 
+habilita su uso inmediato para programar la 
+nueva cita médica desde recepción o desde 
+el portal del paciente. 
+Actores Médico, Recepcionista, Paciente. 
+Actor iniciador Médico. 
+Precondición El Médico debe tener sesión activa (CU01), 
+la cita de origen debe estar en atención 
+(CU11) y deben existir otras especialidades 
+activas registradas (CU04). 
+Flujo principal 1. Durante la consulta médica (CU11), el 
+Médico determina que el paciente requiere 
+valoración en otra área clínica (por ejemplo, 
+pasar de Medicina General a Cardiología o 
+Traumatología). 
+ 
+2. El Médico selecciona la opción "Derivar 
+a Especialidad". 
+ 
+3. El sistema despliega el formulario 
+mostrando los datos del paciente y solicita 
+seleccionar: especialidad médica de 
+destino, nivel de prioridad (Normal, 
+Preferente, Urgente) y el resumen o 
+motivo clínico de la interconsulta. 
+ 
+4. El Médico completa los datos y confirma 
+la derivación. 
+ 
+5. El sistema valida los datos y registra la 
+orden de interconsulta con código 
+correlativo (DER-0001) y estado Pendiente 
+de programar, asociándola al expediente 
+del paciente. 
+ 
+6. Cuando la Recepcionista o el Paciente 
+ingresan a programar una nueva cita 
+(CU07), el sistema detecta la orden de 
+derivación activa y precarga 
+automáticamente la especialidad requerida 
+para seleccionar médico y turno disponible. 
+Postcondición La orden de derivación médica queda 
+asentada en el expediente del paciente y 
+habilitada para el agendamiento prioritario 
+en la especialidad destino. 
+Excepción • E1 (Especialidad destino sin médicos 
+activos - RN04): Si la especialidad 
+seleccionada no cuenta con médicos 
+activos en ese momento, el sistema 
+advierte que la orden quedará registrada 
+como pendiente hasta contar con 
+profesionales disponibles. 
+ 
+• E2 (Campos obligatorios vacíos): Si se 
+omite el motivo clínico de la derivación, el 
+sistema solicita completarlo antes de 
+guardar. 
+CU14: Procesar pago electrónico de reserva médica 
+Atributo Detalles 
+Nombre de CU CU14: Procesar pago electrónico de 
+reserva médica 
+Propósito Facilitar al Paciente y a la Recepcionista el 
+pago en línea del arancel de la consulta 
+médica mediante la pasarela segura Stripe, 
+confirmando automáticamente la cita 
+reservada y emitiendo el comprobante 
+digital de pago. 
+Resumen El actor selecciona una cita en estado 
+Programada e inicia el pago electrónico a 
+través de la pasarela Stripe. Al validarse la 
+transacción con el banco emisor, el sistema 
+registra el cobro, cambia automáticamente 
+el estado de la cita a Confirmada y emite el 
+recibo de pago digital para el paciente. 
+Actores Paciente, Recepcionista. 
+Actor iniciador Paciente o Recepcionista. 
+Precondición Debe existir una cita médica registrada en 
+estado Programada (CU07) pendiente de 
+pago y confirmación. 
+Flujo principal 1. El actor selecciona una cita médica en 
+estado Programada y presiona "Pagar 
+Consulta". 
+ 
+2. El sistema presenta el resumen de la 
+reserva: código de cita, nombre del 
+paciente, correo electrónico, especialidad, 
+médico, fecha, hora y el monto del arancel 
+a pagar. 
+ 
+3. El actor confirma que desea realizar el 
+pago electrónico. 
+ 
+4. El sistema despliega el formulario seguro 
+integrado de la pasarela Stripe solicitando 
+los datos del medio de pago electrónico. 
+ 
+5. El actor ingresa los datos requeridos y 
+autoriza la transacción. 
+ 
+6. La pasarela procesa el cobro y devuelve 
+al sistema la confirmación de la operación 
+aprobada. 
+ 
+7. El sistema valida el monto recibido, 
+registra la transacción en el historial de 
+pagos y genera el número de comprobante. 
+ 
+8. De forma automática, el sistema 
+actualiza el estado de la cita médica 
+pasando de Programada a Confirmada 
+(RF10). 
+ 
+9. El sistema registra el evento en la 
+bitácora (CU03) y muestra en pantalla el 
+comprobante digital de pago con opción de 
+descarga en PDF o envío al correo 
+electrónico del paciente. 
+Postcondición Pago verificado y registrado en el sistema, 
+cita médica actualizada al estado 
+Confirmada y comprobante digital emitido. 
+Excepción • E1 (Pago rechazado o fondos 
+insuficientes): Si la pasarela de pagos 
+rechaza la operación, el sistema informa el 
+motivo del rechazo, no realiza ningún cobro 
+y mantiene la cita en estado Programada 
+para reintentar el pago o abonarlo 
+presencialmente en recepción. 
+ 
+• E2 (Cita ya pagada): Si la cita ya cuenta 
+con un pago confirmado, el sistema bloquea 
+cualquier intento de cobro duplicado. 
+ 
+• E3 (Fallo de conexión con la pasarela): 
+Si se interrumpe la comunicación con 
+Stripe, el sistema aborta la transacción y 
+mantiene la cita en estado Programada sin 
+alterar sus datos. 
+CU15: Interactuar con Chatbot Asistente Virtual ("Angélica") 
+Atributo Detalles 
+Nombre de CU CU15: Interactuar con Chatbot Asistente 
+Virtual ("Angélica") 
+Propósito Ofrecer un canal de atención 
+conversacional interactivo disponible las 24 
+horas en el portal web para orientar a los 
+pacientes sobre especialidades, médicos, 
+horarios y permitirles consultar rápidamente 
+la fecha y estado de sus citas mediante su 
+documento de identidad (CI). 
+Resumen El Paciente abre la ventana del asistente 
+virtual "Angélica" en la aplicación web, elige 
+una pregunta frecuente o escribe su 
+consulta en lenguaje natural, o bien 
+introduce su número de CI para que el 
+asistente consulte la base de datos y le 
+responda al instante sobre sus citas activas. 
+Actores Paciente. 
+Actor iniciador Paciente. 
+Precondición El Paciente debe encontrarse navegando 
+dentro de la aplicación web de la clínica y el 
+servicio del asistente virtual debe estar 
+habilitado. 
+Flujo principal 1. El Paciente presiona el botón flotante del 
+asistente virtual "Angélica" en la pantalla 
+web. 
+ 
+2. El sistema despliega la ventana de 
+conversación interactiva mostrando un 
+saludo de bienvenida y opciones rápidas: 
+"Especialidades disponibles", "Horarios y 
+médicos", "Consultar mis citas por CI" y 
+"Requisitos de atención". 
+ 
+3. El Paciente escribe su pregunta o 
+selecciona una opción del menú rápido. 
+ 
+4. Si solicita consultar sus citas, el asistente 
+le pide: "Por favor escribe tu número de 
+documento de identidad (CI)". 
+ 
+5. El Paciente ingresa su número de CI y lo 
+envía en el chat. 
+ 
+6. El sistema busca al paciente por su CI y 
+recupera sus citas activas en estado 
+Programada o Confirmada. 
+ 
+7. El asistente virtual responde en la 
+conversación detallando: código de cita, 
+especialidad, médico asignado, fecha, hora 
+y estado actual del turno. 
+ 
+8. El asistente consulta al usuario si 
+requiere otra orientación o finaliza 
+cordialmente el diálogo. 
+Postcondición El Paciente recibe respuesta inmediata 
+sobre las especialidades y horarios de la 
+clínica o sobre el estado y fecha de sus 
+próximas citas. 
+Excepción • E1 (CI no registrado o sin citas 
+vigentes): Si el CI no figura en el padrón o 
+no tiene citas activas, el asistente informa 
+amablemente que no encontró citas 
+programadas y le ofrece el enlace para 
+registrarse o reservar turno. 
+ 
+• E2 (Pregunta fuera del ámbito de la 
+clínica): Si el mensaje del usuario no se 
+relaciona con citas, médicos o servicios del 
+establecimiento, el asistente virtual indica 
+amablemente los temas sobre los que 
+puede orientar. 
+CU16: Generar reportes estáticos administrativos 
+Atributo Detalles 
+Nombre de CU CU16: Generar reportes estáticos 
+administrativos 
+Propósito Proveer a la administración y recepción el 
+primer formato obligatorio de reportes 
+(RF13), permitiendo consultar informes 
+estáticos predefinidos con filtros por fecha, 
+médico, especialidad y estado, calculando 
+totales estadísticos y facilitando su 
+exportación a PDF, CSV o Excel. 
+Resumen El Administrador o la Recepcionista 
+seleccionan uno de los reportes 
+administrativos de la clínica (citas por fecha, 
+por médico, por especialidad, por estado, 
+padrón de pacientes, agenda diaria o 
+consolidado de atendidas, canceladas e 
+inasistencias), aplican filtros de fecha, 
+visualizan los resultados tabulares con 
+totales y descargan el informe. 
+Actores Administrador, Recepcionista. 
+Actor iniciador Administrador o Recepcionista. 
+Precondición El actor debe tener sesión activa (CU01) y 
+el sistema debe contar con información 
+histórica registrada de entre 3 y 6 meses de 
+operación. 
+Flujo principal 1. El actor accede al módulo "Reportes 
+Administrativos". 
+ 
+2. El sistema despliega el catálogo de 
+reportes oficiales requeridos por la clínica 
+(RF13): 
+ 
+• Citas programadas para una fecha 
+específica. 
+ 
+• Citas agrupadas por médico. 
+ 
+• Citas agrupadas por especialidad médica. 
+ 
+• Citas clasificadas por estado 
+(Programadas, Confirmadas, Atendidas, 
+Canceladas, Inasistencias). 
+ 
+• Padrón demográfico general de pacientes 
+registrados. 
+ 
+• Cantidad consolidada de citas atendidas, 
+canceladas e inasistencias dentro de un 
+período. 
+ 
+• Agenda diaria detallada de cada médico. 
+ 
+3. El actor selecciona el reporte deseado e 
+ingresa los filtros: fecha específica o rango 
+de fechas (fecha inicial y fecha final), 
+médico o especialidad. 
+ 
+4. El actor presiona "Generar Reporte". 
+ 
+5. El sistema procesa los registros del 
+período y calcula los totales estadísticos. 
+ 
+6. El sistema presenta la tabla de 
+resultados en pantalla con sus 
+encabezados, filas detalladas y fila final de 
+totales acumulados. 
+ 
+7. El actor presiona "Exportar" y elige el 
+formato deseado (PDF, CSV o Excel). 
+ 
+8. El sistema compila y descarga el archivo 
+correspondiente en el dispositivo del 
+usuario. 
+Postcondición Reporte administrativo visualizado en 
+pantalla con sus totales estadísticos y 
+archivo digital descargado cuando se 
+solicita su exportación. 
+Excepción • E1 (Rango de fechas incoherente): Si la 
+fecha final es menor a la fecha inicial, el 
+sistema impide generar el reporte y solicita 
+corregir el rango. 
+ 
+• E2 (Sin registros en el período): Si no 
+existen datos que coincidan con los filtros, 
+el sistema muestra la tabla vacía con el 
+aviso: "No se encontraron registros para los 
+filtros seleccionados" y bloquea la 
+exportación de archivos en blanco. 
+CU17: Generar reportes dinámicos mediante Query By Example (QBE) 
+Atributo Detalles 
+Nombre de CU CU17: Generar reportes dinámicos 
+mediante Query By Example (QBE) 
+Propósito Cumplir con el segundo formato 
+obligatorio de reportes exigido por la 
+docente (RF13 - QBE), permitiendo que el 
+usuario arme y personalice su propio 
+reporte seleccionando visualmente desde la 
+interfaz qué campos desea visualizar y bajo 
+qué condiciones de ejemplo desea filtrar la 
+información. 
+Resumen El Administrador accede al constructor 
+dinámico QBE, marca mediante casillas de 
+selección los campos específicos que 
+quiere ver en su reporte (de pacientes, 
+médicos, citas o pagos) e introduce criterios 
+de ejemplo o filtros combinados sin escribir 
+código; el sistema procesa la selección y 
+construye el reporte a medida en pantalla 
+con opción de exportación. 
+Actores Administrador. 
+Actor iniciador Administrador. 
+Precondición El Administrador debe tener sesión activa 
+(CU01) y el sistema debe contar con el 
+historial de datos clínicos de 3 a 6 meses 
+cargado. 
+Flujo principal 1. El Administrador accede al módulo 
+"Reportes Dinámicos (QBE - Consulta 
+por Ejemplo)". 
+ 
+2. El sistema presenta la interfaz interactiva 
+con las áreas de datos y sus campos 
+seleccionables: 
+ 
+• Paciente: código, CI, nombres, apellidos, 
+edad, sexo, correo electrónico, teléfono, 
+tipo de sangre. 
+ 
+• Médico y Especialidad: código, nombre 
+del médico, matrícula, especialidad. 
+ 
+• Cita Médica: código de cita, fecha, hora, 
+motivo, estado, fecha de creación. 
+ 
+• Pagos y Atención: monto pagado, estado 
+de pago, diagnóstico. 
+ 
+3. El Administrador marca visualmente 
+mediante casillas de verificación 
+únicamente las columnas que desea incluir 
+en su reporte. 
+ 
+4. En las filas de ejemplo, el Administrador 
+ingresa las condiciones deseadas (por 
+ejemplo: Especialidad = "Pediatría", Estado 
+= "Atendida", Edad menor a "13") y define el 
+orden de presentación. 
+ 
+5. El Administrador presiona "Generar 
+Reporte QBE". 
+ 
+6. El sistema valida que se haya 
+seleccionado al menos una columna y que 
+los ejemplos sean coherentes. 
+ 
+7. El sistema cruza la información, filtra los 
+registros que cumplen con el ejemplo y 
+renderiza en pantalla la tabla personalizada 
+con las columnas exactas que el usuario 
+eligió. 
+ 
+8. El Administrador revisa el reporte 
+dinámico y, si lo requiere, lo descarga en 
+formato PDF, CSV o Excel. 
+Postcondición Reporte dinámico personalizado generado 
+en pantalla según los campos y ejemplos 
+definidos por el Administrador. 
+Excepción • E1 (Ningún campo seleccionado): Si el 
+usuario presiona generar sin haber 
+marcado ninguna columna, el sistema 
+advierte: "Debe seleccionar al menos un 
+campo de la interfaz para estructurar el 
+reporte QBE". 
+ 
+• E2 (Sin registros coincidentes con el 
+ejemplo): Si ningún registro cumple con los 
+criterios combinados ingresados, el sistema 
+muestra la cabecera elegida e informa: "No 
+se encontraron registros que coincidan con 
+el ejemplo especificado". 
+CU18: Generar reportes mediante comando de voz con IA 
+Atributo Detalles 
+Nombre de CU CU18: Generar reportes mediante 
+comando de voz con IA 
+Propósito Cumplir con el tercer formato obligatorio 
+de reportes exigido por la docente (RF13 
+- Comando de Voz con IA), permitiendo 
+consultar disponibilidad médica, horarios y 
+reportes administrativos mediante 
+instrucciones habladas en lenguaje natural 
+a través del micrófono, las cuales son 
+procesadas con Inteligencia Artificial para 
+consultar la información y desplegar el 
+resultado en pantalla. 
+Resumen El Administrador o el Médico activan el 
+micrófono y dictan verbalmente su consulta 
+en lenguaje natural (ej. disponibilidad de 
+médicos o citas atendidas en el mes). El 
+sistema captura el audio, utiliza Inteligencia 
+Artificial para interpretar la petición y 
+transformarla internamente en una consulta 
+estructurada sobre los registros de la 
+clínica, y despliega el reporte resultante en 
+pantalla con opción de exportación. 
+Actores Administrador, Médico. 
+Actor iniciador Administrador o Médico. 
+Precondición El actor debe tener sesión activa (CU01), 
+disponer de un micrófono habilitado en su 
+dispositivo y contar con registros en la base 
+de datos de la clínica. 
+Flujo principal 1. El actor accede al módulo "Reportes por 
+Comando de Voz con IA". 
+ 
+2. El sistema despliega la interfaz con el 
+botón de activación del micrófono y 
+ejemplos de instrucciones sugeridas. 
+ 
+3. El actor presiona el botón "Hablar" y 
+pronuncia en voz alta su solicitud en 
+lenguaje natural (por ejemplo: "Quiero ver el 
+médico con la especialidad de oftalmología, 
+qué día tiene horario disponible" o 
+"Muéstrame el reporte de citas atendidas de 
+cardiología este mes"). 
+ 
+4. El sistema captura la voz del usuario, 
+transcribe las palabras en pantalla para 
+confirmar lo escuchado y envía la orden al 
+procesador de Inteligencia Artificial en el 
+servidor. 
+ 
+5. El recurso de Inteligencia Artificial 
+interpreta el significado de la frase en 
+lenguaje natural y la traduce internamente a 
+una consulta de búsqueda estructurada 
+sobre las tablas de la clínica. 
+ 
+6. El servidor valida que la instrucción 
+generada sea exclusivamente de lectura y 
+consulta de información para garantizar la 
+seguridad del sistema. 
+ 
+7. El sistema ejecuta la búsqueda sobre la 
+base de datos de la clínica y recupera los 
+datos solicitados (por ejemplo, mostrando 
+que el médico de oftalmología atiende los 
+lunes a las 10:00 y los jueves a las 11:00, o 
+la tabla de citas atendidas solicitada). 
+ 
+8. El sistema despliega el reporte tabular 
+estructurado en pantalla y habilita su 
+exportación a PDF o Excel. 
+Postcondición La consulta dictada por voz es procesada 
+mediante Inteligencia Artificial y el reporte 
+solicitado se presenta de forma inmediata 
+en la pantalla del usuario. 
+Excepción • E1 (Micrófono deshabilitado o audio 
+ininteligible): Si no se detecta voz o el 
+audio es incomprensible por ruido 
+ambiental, el sistema solicita al actor repetir 
+nuevamente el comando de voz. 
+ 
+• E2 (Comando fuera del dominio 
+clínico): Si la instrucción hablada no 
+guarda relación con citas, médicos, 
+pacientes u horarios de la clínica, el 
+asistente de IA informa que la consulta no 
+corresponde a los registros del 
+establecimiento y sugiere un ejemplo válido. 
+ 
+• E3 (Intento de alteración de datos por 
+voz): Si el comando de voz solicita borrar o 
+alterar registros (ej. "elimina al médico"), el 
+filtro de seguridad del sistema bloquea la 
+orden e informa que las consultas por voz 
+están autorizadas únicamente para la 
+lectura y generación de reportes. 
+ 
