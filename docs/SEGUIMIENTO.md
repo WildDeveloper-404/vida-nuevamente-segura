@@ -120,7 +120,7 @@ con `livemode=false`. El historial local conserva 15 citas y 5 pagos.
 
 El programador despachó dos avisos técnicos por Brevo en una base aislada, sin
 repetirlos al ejecutar nuevamente el comando. Se detuvo el trabajador de prueba.
-La llegada de ambos correos queda pendiente de confirmación del usuario.
+El usuario confirmó la llegada de ambos correos el 8 de noviembre de 2026.
 
 Se probó Gemini real con `gemini-3.5-flash` y razonamiento `high`, tanto la
 planificación como el reporte escrito desde la pantalla del médico. Se corrigió

@@ -10,7 +10,7 @@ Fecha: 8 de noviembre de 2026, zona horaria America/Caracas.
 | Pago y comprobante | 100,00 BOB; una sola fila de pago tras los dos eventos aceptados; cita confirmada y comprobante generado | Aprobado |
 | Cancelación y devolución | Cancelación desde el Kardex, solicitud de devolución y ejecución de `clinica:devoluciones`; consulta posterior a Stripe | Aprobado: pago y devolución `succeeded`, `livemode=false` |
 | Programador | `schedule:work` inició el despacho automático de confirmación y recordatorio por SMTP en una base aislada | Aprobado; proceso de prueba detenido al terminar |
-| Brevo | Aceptó los dos avisos técnicos al remitente configurado; repetir el despacho no modificó las fechas de envío | Aceptación SMTP comprobada; llegada a la bandeja pendiente de confirmación del usuario |
+| Brevo | Aceptó los dos avisos técnicos al remitente configurado; repetir el despacho no modificó las fechas de envío | Aprobado: el usuario confirmó la recepción de ambos correos el 8 de noviembre de 2026 |
 | Gemini | API real con `gemini-3.5-flash`, razonamiento `high`; interpretación de filtros y consulta desde la pantalla del médico | Aprobado por entrada escrita |
 | Angélica | Consulta de especialidades desde el chat del paciente | Aprobado; este flujo usa las respuestas de la aplicación, no Gemini |
 | Perfiles | Regresión automatizada de permisos y vistas; recorrido manual del portal de paciente y del médico | Automatización aprobada; revisión visual completa de Administrador y Recepción pendiente |
@@ -74,5 +74,6 @@ servicio o el sistema operativo.
 - Suite final en `clinica_revision_20261107_test`: **47 pruebas, 238 aserciones**,
   sin fallos, en 43,390 segundos. Véase [pruebas.xml](pruebas.xml).
 
-La recepción de los correos y la captura con micrófono son comprobaciones
-distintas de la aceptación SMTP y de la consulta escrita: no se dan por aprobadas.
+El usuario confirmó la recepción de los dos correos el 8 de noviembre de 2026.
+La captura con micrófono sigue pendiente: es una comprobación distinta de la
+consulta escrita aprobada.
