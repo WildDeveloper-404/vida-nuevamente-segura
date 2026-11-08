@@ -24,3 +24,5 @@ RUN mkdir -p storage/framework/cache/data storage/framework/sessions storage/fra
     && apache2ctl -t
 
 EXPOSE 10000
+
+CMD ["sh", "-ec", "a2dismod -q mpm_event mpm_worker && a2enmod -q mpm_prefork && exec apache2-foreground"]
