@@ -7,7 +7,7 @@ class NotificacionCita extends Model
     protected $primaryKey = 'id_notificacion';
     public $timestamps = false;
     
-    protected $fillable = ['id_notificacion', 'id_cita', 'tipo', 'mensaje', 'correo_destino', 'estado_envio', 'fecha_envio'];
+    protected $fillable = ['id_notificacion', 'id_cita', 'tipo', 'mensaje', 'correo_destino', 'estado_envio', 'fecha_envio', 'enviar_desde', 'respuesta', 'fecha_respuesta'];
     
     public function cita() { return $this->belongsTo(CitaMedica::class, 'id_cita'); }
     

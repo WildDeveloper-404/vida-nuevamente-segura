@@ -13,12 +13,14 @@ class ReporteService
         'matricula'=>['m.nro_matricula','Médico · Matrícula'],'especialidad'=>['e.nombre','Especialidad · Nombre'],
         'codigo'=>['c.codigo_cita','Cita · Código'],'fecha'=>['c.fecha_cita','Cita · Fecha'],'hora'=>['c.hora_inicio','Cita · Hora'],
         'estado'=>['c.estado','Cita · Estado'],'creacion'=>['c.fecha_registro','Cita · Creación'],
-        'monto'=>['pg.monto','Pago · Monto'],'estado_pago'=>['pg.estado_pago','Pago · Estado'],
+        'monto'=>['pg.monto','Pago · Monto'],'moneda'=>['pg.moneda','Pago · Moneda'],
+        'estado_pago'=>['pg.estado_pago','Pago · Estado'],'estado_devolucion'=>['dp.estado','Pago · Devolución'],
+        'arancel'=>['c.arancel_reservado','Cita · Arancel pactado'],
     ];
     public const TYPES=['fecha'=>'Citas por fecha','medico'=>'Citas por médico','especialidad'=>'Citas por especialidad','estado'=>'Citas por estado','pacientes'=>'Padrón demográfico','consolidado'=>'Consolidado de citas','agenda'=>'Agenda diaria'];
     public function query()
     {
-        return DB::table('cita_medica as c')->join('paciente as p','p.id_paciente','=','c.id_paciente')->join('persona as pp','pp.id_persona','=','p.id_paciente')->join('medico as m','m.id_medico','=','c.id_medico')->join('persona as pm','pm.id_persona','=','m.id_medico')->join('especialidad as e','e.id_especialidad','=','c.id_especialidad')->leftJoin('pago as pg','pg.id_cita','=','c.id_cita')->leftJoin('usuario as u','u.id_persona','=','p.id_paciente');
+        return DB::table('cita_medica as c')->join('paciente as p','p.id_paciente','=','c.id_paciente')->join('persona as pp','pp.id_persona','=','p.id_paciente')->join('medico as m','m.id_medico','=','c.id_medico')->join('persona as pm','pm.id_persona','=','m.id_medico')->join('especialidad as e','e.id_especialidad','=','c.id_especialidad')->leftJoin('pago as pg','pg.id_cita','=','c.id_cita')->leftJoin('devolucion_pago as dp','dp.id_pago','=','pg.id_pago')->leftJoin('usuario as u','u.id_persona','=','p.id_paciente');
     }
     public function qbe(array $d,?int $doctor=null): array
     {
@@ -32,9 +34,17 @@ class ReporteService
             if(!isset(self::FIELDS[$col]) || !in_array($op,['=','!=','>','>=','<','<=','ilike'],true)) throw ValidationException::withMessages(['filtros'=>'Filtro no permitido.']);
             $value=$filter['valor'];
             if(!is_scalar($value) || mb_strlen((string)$value)>200) throw ValidationException::withMessages(['filtros'=>'Valor de filtro inválido.']);
-            if(in_array($col,['edad','monto']) && (!is_numeric($value) || $op==='ilike')) throw ValidationException::withMessages(['filtros'=>'Edad y monto requieren valores numéricos.']);
+            if(in_array($col,['edad','monto','arancel']) && (!is_numeric($value) || $op==='ilike')) throw ValidationException::withMessages(['filtros'=>'Edad, monto y arancel requieren valores numéricos.']);
             if(in_array($col,['fecha','creacion']) && !strtotime((string)$value)) throw ValidationException::withMessages(['filtros'=>'Ingrese una fecha válida.']);
-            $q->whereRaw(self::FIELDS[$col][0].' '.$op.' ?',[$op==='ilike'?'%'.$value.'%':$value]);
+            if (in_array($col, ['especialidad', 'medico', 'nombres', 'apellidos'], true)
+                && in_array($op, ['=', '!=', 'ilike'], true)) {
+                $q->whereRaw(
+                    'lower(unaccent(('.self::FIELDS[$col][0].')::text)) '.$op.' lower(unaccent(?::text))',
+                    [$op === 'ilike' ? '%'.trim($value, '%').'%' : $value]
+                );
+            } else {
+                $q->whereRaw(self::FIELDS[$col][0].' '.$op.' ?',[$op==='ilike'?'%'.$value.'%':$value]);
+            }
         }
         $order=$d['orden']??'fecha';if(!isset(self::FIELDS[$order])) throw ValidationException::withMessages(['orden'=>'Orden no permitido.']);
         $q->orderByRaw(self::FIELDS[$order][0].' ASC')->limit(1001);
@@ -63,7 +73,11 @@ class ReporteService
         } elseif($type==='consolidado' && empty($d['id_medico']) && empty($d['id_especialidad']) && empty($d['estado'])) $rows=DB::select('SELECT * FROM fn_reporte_consolidado_citas(?::date, ?::date)',[$d['desde'],$d['hasta']]);
         elseif(in_array($type,['medico','especialidad','estado','consolidado'])) {
             $group=match($type){'medico'=>"pm.nombres || ' ' || pm.apellidos",'estado'=>'c.estado',default=>'e.nombre'};
-            $q->selectRaw($group.' AS grupo, count(*) AS total, count(*) FILTER (WHERE c.estado = ?) AS atendidas, count(*) FILTER (WHERE c.estado = ?) AS canceladas, count(*) FILTER (WHERE c.estado = ?) AS inasistencias, coalesce(sum(pg.monto) FILTER (WHERE pg.estado_pago = ?),0) AS recaudado',['Atendida','Cancelada','Inasistencia','Pagado']);
+            $q->selectRaw($group.' AS grupo, count(*) AS total, count(*) FILTER (WHERE c.estado = ?) AS atendidas, count(*) FILTER (WHERE c.estado = ?) AS canceladas, count(*) FILTER (WHERE c.estado = ?) AS inasistencias',['Atendida','Cancelada','Inasistencia']);
+            foreach (['bob','usd'] as $currency) {
+                $q->selectRaw("coalesce(sum(pg.monto) FILTER (WHERE pg.estado_pago = 'Pagado'
+                    AND dp.estado IS DISTINCT FROM 'Devuelto' AND pg.moneda = ?), 0) AS recaudado_".$currency, [$currency]);
+            }
             $rows=$q->groupByRaw($group)->orderBy('grupo')->limit(1001)->get()->all();
         } else {
             if($type==='fecha') $q->where('c.estado','Programada');
@@ -71,7 +85,7 @@ class ReporteService
         }
         if(count($rows)>1000) throw ValidationException::withMessages(['desde'=>'El informe supera 1000 filas. Reduzca el período.']);
         $columns=$rows?array_combine(array_keys((array)$rows[0]),array_map(fn($k)=>ucfirst(str_replace('_',' ',$k)),array_keys((array)$rows[0]))):['resultado'=>'Resultado'];
-        $totals=[];foreach(array_keys($columns) as $k) if(str_starts_with($k,'total') || in_array($k,['atendidas','canceladas','inasistencias','recaudado'])) $totals[$k]=collect($rows)->sum($k);
+        $totals=[];foreach(array_keys($columns) as $k) if(str_starts_with($k,'total') || in_array($k,['atendidas','canceladas','inasistencias','recaudado_bob','recaudado_usd'])) $totals[$k]=collect($rows)->sum($k);
         return compact('columns','rows','totals');
     }
 }

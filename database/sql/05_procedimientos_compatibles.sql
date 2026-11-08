@@ -111,8 +111,8 @@ BEGIN
     p_codigo_generado := 'PAC-' || LPAD(nextval('seq_codigo_paciente')::TEXT, 4, '0');
 
     -- Insertar en subclase paciente
-    INSERT INTO paciente (id_paciente, codigo_paciente, sexo, fecha_nacimiento, estado)
-    VALUES (v_id_persona, p_codigo_generado, p_sexo, p_fecha_nacimiento, 'Activo');
+    INSERT INTO paciente (id_paciente, codigo_paciente, sexo, fecha_nacimiento, estado, correo_contacto)
+    VALUES (v_id_persona, p_codigo_generado, p_sexo, p_fecha_nacimiento, 'Activo', LOWER(TRIM(p_correo)));
 
     -- Crear su expediente de perfil clínico básico (CU10)
     INSERT INTO perfil_clinico (id_paciente, tipo_sangre)
@@ -128,7 +128,7 @@ BEGIN
     p_id_paciente_creado := v_id_persona;
 
     INSERT INTO bitacora (modulo, accion, descripcion)
-    VALUES ('Pacientes', 'ALTA_PACIENTE', 'Paciente registrado con código ' || p_codigo_generado || ' y CI ' || p_ci);
+    VALUES ('Pacientes', 'ALTA_PACIENTE', 'Paciente registrado con código ' || p_codigo_generado);
 END;
 $$;
 
@@ -161,7 +161,7 @@ BEGIN
     END;
 
     FOR r_horario IN 
-        SELECT hora_inicio, hora_fin, duracion_minutos
+        SELECT hora_inicio, hora_fin, duracion_minutos, id_consultorio
         FROM horario_atencion
         WHERE id_medico = p_id_medico AND dia_semana = v_dia_nombre AND estado = 'Activo'
         ORDER BY hora_inicio
@@ -173,7 +173,7 @@ BEGIN
             -- Verificar si el bloque está ocupado por cita activa o bloqueo de emergencia
             v_ocupado := EXISTS (
                 SELECT 1 FROM cita_medica
-                WHERE id_medico = p_id_medico AND fecha_cita = p_fecha
+                WHERE (id_medico = p_id_medico OR id_consultorio = r_horario.id_consultorio) AND fecha_cita = p_fecha
                   AND estado <> 'Cancelada'
                   AND (v_slot_actual < hora_fin AND v_slot_fin > hora_inicio)
             ) OR EXISTS (
@@ -184,7 +184,8 @@ BEGIN
 
             hora_inicio_slot := v_slot_actual;
             hora_fin_slot := v_slot_fin;
-            estado_slot := CASE WHEN v_ocupado THEN 'Ocupado' ELSE 'Disponible' END;
+            estado_slot := CASE WHEN v_ocupado OR p_fecha + v_slot_actual <= LOCALTIMESTAMP
+                THEN 'Ocupado' ELSE 'Disponible' END;
             RETURN NEXT;
 
             v_slot_actual := v_slot_fin;
@@ -238,13 +239,14 @@ BEGIN
         p_fecha_cita, p_hora_inicio, v_hora_fin, p_motivo_consulta, 'Programada'
     ) RETURNING id_cita INTO p_id_cita_creada;
 
-    -- Registrar notificación de confirmación/recordatorio si el paciente tiene correo
-    SELECT u.correo INTO v_correo_pac 
-    FROM usuario u WHERE u.id_persona = p_id_paciente;
+    -- El aviso de reserva es inmediato. El recordatorio lo programa el trigger.
+    SELECT COALESCE(u.correo, p.correo_contacto) INTO v_correo_pac
+    FROM paciente p LEFT JOIN usuario u ON u.id_persona = p.id_paciente
+    WHERE p.id_paciente = p_id_paciente;
 
     IF v_correo_pac IS NOT NULL THEN
         INSERT INTO notificacion_cita (id_cita, tipo, mensaje, correo_destino, estado_envio)
-        VALUES (p_id_cita_creada, 'Recordatorio', 
+        VALUES (p_id_cita_creada, 'Confirmacion',
                 'Cita programada con código ' || p_codigo_cita_out || ' para el ' || p_fecha_cita || ' a las ' || p_hora_inicio,
                 v_correo_pac, 'Pendiente');
     END IF;
@@ -314,7 +316,9 @@ BEGIN
                 WHERE id_cita = r_cita.id_cita;
 
                 -- Obtener correo del paciente y registrar notificación urgente (CU09)
-                SELECT correo INTO v_correo_pac FROM usuario WHERE id_persona = r_cita.id_paciente;
+                SELECT COALESCE(u.correo, p.correo_contacto) INTO v_correo_pac
+                FROM paciente p LEFT JOIN usuario u ON u.id_persona = p.id_paciente
+                WHERE p.id_paciente = r_cita.id_paciente;
 
                 INSERT INTO notificacion_cita (id_cita, tipo, mensaje, correo_destino, estado_envio)
                 VALUES (
@@ -322,7 +326,8 @@ BEGIN
                     'Reprogramacion_Emergencia',
                     'Aviso importante: Por motivos de cirugía/emergencia médica (' || p_motivo_emergencia || 
                     '), su cita ' || r_cita.codigo_cita || ' fue trasladada al día ' || v_fecha_busqueda || 
-                    ' a las ' || r_slot_libre.hora_inicio_slot,
+                    ' a las ' || r_slot_libre.hora_inicio_slot ||
+                    '. Ingrese a Mis citas e historial para confirmar el traslado o solicitar una devolución si ya pagó.',
                     COALESCE(v_correo_pac, 'sin-correo@clinica.bo'),
                     CASE WHEN v_correo_pac IS NOT NULL THEN 'Pendiente' ELSE 'Fallo_Correo' END
                 );

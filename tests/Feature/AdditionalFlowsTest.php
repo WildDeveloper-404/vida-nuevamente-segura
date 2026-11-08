@@ -16,9 +16,10 @@ class AdditionalFlowsTest extends TestCase
     public function test_receta_pdf_qr_y_comprobante_pdf(): void
     {
         $c=app(CitaService::class)->book($this->appointmentData(),null);$pay=app(PagoService::class)->record($c->id_cita,10000,'usd','pi_pdf');$u=$this->user('Medico',$c->medico->persona);
-        $this->withSession($this->sessionFor($u))->post('/medico/citas/'.$c->id_cita.'/receta',['diagnostico'=>'Diagnóstico de prueba','items'=>[['tipo_item'=>'Examen_Laboratorio','medicamento_o_examen'=>'Hemograma']]])->assertSessionHasNoErrors();
+        $c->fresh()->update(['estado'=>'Atendida']);
+        $this->withSession($this->sessionFor($u))->post('/medico/citas/'.$c->id_cita.'/receta',['cie10'=>'Z00.0','diagnostico'=>'Diagnóstico de prueba','items'=>[['tipo_item'=>'Examen_Laboratorio','medicamento_o_examen'=>'Hemograma']]])->assertSessionHasNoErrors();
         $rx=RecetaMedica::where('id_cita',$c->id_cita)->firstOrFail();$r=$this->get('/recetas/'.$rx->id_receta.'/pdf')->assertOk();$this->assertStringStartsWith('%PDF',$r->getContent());
-        $this->get('/receta/verificar/'.$rx->codigo_qr)->assertOk()->assertDontSee('Diagnóstico de prueba');
+        $this->get('/receta/verificar/'.$rx->codigo_qr)->assertOk()->assertSee('Integridad del registro verificada')->assertDontSee('Diagnóstico de prueba');
         $u=$this->user('Paciente',$c->paciente->persona);$this->withSession($this->sessionFor($u))->get('/comprobantes/'.$pay->id_pago.'?pdf=1')->assertOk();
     }
     public function test_administracion_crea_medico_y_usuario_y_bajas_logicas(): void
@@ -51,8 +52,8 @@ class AdditionalFlowsTest extends TestCase
     public function test_derivacion_reserva_destino_y_actualiza_estado(): void
     {
         $c=app(CitaService::class)->book($this->appointmentData(),null);$c->update(['estado'=>'Confirmada']);$u=$this->user('Medico',$c->medico->persona);
-        $this->withSession($this->sessionFor($u))->post('/medico/citas/'.$c->id_cita.'/derivacion',['id_especialidad_destino'=>$c->id_especialidad,'prioridad'=>'Preferente','motivo_clinico'=>'Seguimiento'])->assertSessionHasNoErrors();
-        $der=$c->derivaciones()->firstOrFail();$u=$this->user('Paciente',$c->paciente->persona);$this->withSession($this->sessionFor($u))->get('/paciente/citas/nueva?derivacion='.$der->id_derivacion)->assertOk()->assertSee($der->codigo_derivacion);
+        $this->withSession($this->sessionFor($u))->post('/medico/citas/'.$c->id_cita.'/derivacion',['id_especialidad_destino'=>$c->id_especialidad,'prioridad'=>'Prioritaria','motivo_clinico'=>'Seguimiento'])->assertSessionHasNoErrors();
+        $der=$c->derivaciones()->firstOrFail();$u=$this->user('Paciente',$c->paciente->persona);$this->withSession($this->sessionFor($u))->get('/paciente/citas/nueva')->assertOk()->assertSee($der->codigo_derivacion);
         $data=$this->appointmentData($c->paciente,$c->medico);$data['hora_inicio']='11:00';$data['id_derivacion']=$der->id_derivacion;$this->post('/citas',$data)->assertSessionHasNoErrors();$this->assertSame('Programada',$der->fresh()->estado);
     }
 }

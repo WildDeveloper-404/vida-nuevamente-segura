@@ -87,8 +87,8 @@ class ClinicaTest extends TestCase
     }
     public function test_alergia_rechaza_receta_completa(): void
     {
-        $d=$this->appointmentData();$c=app(CitaService::class)->book($d,null);$c->update(['estado'=>'Confirmada']);$c->paciente->perfilClinico->update(['alergias'=>'Penicilina']);$u=$this->user('Medico',$c->medico->persona);
-        $this->withSession($this->sessionFor($u))->post('/medico/citas/'.$c->id_cita.'/receta',['diagnostico'=>'Prueba','items'=>[['tipo_item'=>'Medicamento','medicamento_o_examen'=>'Penicilina','dosis'=>'1','frecuencia'=>'24 h','duracion'=>'1 día']]])->assertSessionHasErrors('db_error');$this->assertFalse(RecetaMedica::where('id_cita',$c->id_cita)->exists());
+        $d=$this->appointmentData();$c=app(CitaService::class)->book($d,null);$c->update(['estado'=>'Confirmada']);$c->update(['estado'=>'Atendida']);$c->paciente->perfilClinico->update(['alergias'=>'Polen; Penicilina']);$u=$this->user('Medico',$c->medico->persona);
+        $this->withSession($this->sessionFor($u))->post('/medico/citas/'.$c->id_cita.'/receta',['cie10'=>'Z00.0','diagnostico'=>'Prueba','items'=>[['tipo_item'=>'Medicamento','medicamento_o_examen'=>'Marca de prueba','principio_activo'=>'penicilina','dosis'=>'1','frecuencia'=>'24 h','duracion'=>'1 día']]])->assertSessionHasErrors('db_error');$this->assertFalse(RecetaMedica::where('id_cita',$c->id_cita)->exists());
     }
     public function test_pago_idempotente_monto_y_comprobante(): void
     {

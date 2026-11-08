@@ -175,7 +175,7 @@ La receta puede descargarse en PDF. Incluye un código QR hacia una página púb
 
 ## 8. Pagos y comprobantes
 
-El importe de la consulta se obtiene del arancel de la especialidad, no de un valor enviado por el navegador. Hay dos caminos: pago presencial registrado por recepción y pago en línea mediante Stripe Checkout. Para iniciar un Checkout se reutiliza una sesión abierta cuando corresponde, con bloqueo e identificador de idempotencia. Stripe notifica el resultado por webhook; la firma de este evento se verifica antes de procesarlo.
+El importe de la consulta queda guardado al reservar. Recepción registra efectivo en caja y los pagos con tarjeta se tramitan mediante Stripe Checkout. Para iniciar un Checkout se reutiliza una sesión abierta cuando corresponde, con bloqueo e identificador de idempotencia. Stripe notifica el resultado mediante un webhook cuya firma se verifica antes de procesarlo.
 
 `PagoService` comprueba cita, importe, moneda, referencia y duplicados. El registro del pago y el comprobante se realiza en una transacción. La regla de la base confirma la cita cuando el pago queda efectivamente pagado. Se puede generar un PDF del comprobante. Este comprobante es un documento interno del sistema; el proyecto no acredita una certificación fiscal externa.
 

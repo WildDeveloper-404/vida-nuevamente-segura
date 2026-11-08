@@ -7,7 +7,7 @@ class DetalleReceta extends Model
     protected $primaryKey = 'id_detalle';
     public $timestamps = false;
     
-    protected $fillable = ['id_detalle', 'id_receta', 'tipo_item', 'medicamento_o_examen', 'dosis', 'frecuencia', 'duracion'];
+    protected $fillable = ['id_detalle', 'id_receta', 'tipo_item', 'medicamento_o_examen', 'principio_activo', 'dosis', 'frecuencia', 'duracion'];
     
     public function receta() { return $this->belongsTo(RecetaMedica::class, 'id_receta'); }
     

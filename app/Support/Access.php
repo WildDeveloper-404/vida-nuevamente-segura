@@ -3,6 +3,21 @@ namespace App\Support;
 use App\Models\CitaMedica;
 final class Access
 {
+    public static function menu(): array
+    {
+        $allowed = request()->attributes->get('permisos', []);
+        return array_filter(config('navigation.'.session('rol'), []), static function ($item) use ($allowed) {
+            $route = app('router')->getRoutes()->getByName($item[0]);
+            foreach ($route->gatherMiddleware() as $rule) {
+                if (is_string($rule) && str_starts_with($rule, 'permiso:')
+                    && !in_array(substr($rule, 8), $allowed, true)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
     public static function cita(CitaMedica $cita, bool $clinical = false): void
     {
         $role = session('rol');

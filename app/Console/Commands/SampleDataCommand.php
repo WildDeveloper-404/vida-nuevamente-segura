@@ -177,11 +177,11 @@ class SampleDataCommand extends Command
 
             foreach ([0, 2, 3, 6] as $index) {
                 $appointment = $created[$index];
-                $amount = PagoService::cents((string) $appointment->especialidad->arancel_consulta);
+                $amount = PagoService::cents((string) $appointment->arancel_reservado);
                 $pagos->record(
                     $appointment->id_cita,
                     $amount,
-                    (string) config('services.stripe.currency'),
+                    (string) $appointment->moneda_reservada,
                     sprintf('FIC-PRES-%04d', $index + 1),
                     'Efectivo'
                 );

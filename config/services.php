@@ -1,2 +1,2 @@
 <?php
-return ['stripe'=>['key'=>env('STRIPE_KEY'),'secret'=>env('STRIPE_SECRET'),'webhook_secret'=>env('STRIPE_WEBHOOK_SECRET'),'currency'=>env('STRIPE_CURRENCY','usd')],'gemini'=>['key'=>env('GEMINI_API_KEY'),'model'=>env('GEMINI_MODEL','gemini-2.5-flash')]];
+return ['billing'=>['currency'=>strtolower(env('CLINICA_MONEDA',env('STRIPE_CURRENCY','usd')))],'stripe'=>['key'=>env('STRIPE_KEY'),'secret'=>env('STRIPE_SECRET'),'webhook_secret'=>env('STRIPE_WEBHOOK_SECRET'),'currency'=>env('STRIPE_CURRENCY','usd')],'gemini'=>['key'=>env('GEMINI_API_KEY'),'model'=>env('GEMINI_MODEL','gemini-3.5-flash'),'thinking_level'=>env('GEMINI_THINKING_LEVEL','high'),'timeout'=>(int)env('GEMINI_TIMEOUT',60)]];

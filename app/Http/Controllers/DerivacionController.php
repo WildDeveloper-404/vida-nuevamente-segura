@@ -4,6 +4,7 @@ use App\Models\{CitaMedica,Especialidad,DerivacionMedica};
 use App\Support\{Access,Audit};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 class DerivacionController extends Controller
 {
     public function create(CitaMedica $cita)
@@ -13,7 +14,7 @@ class DerivacionController extends Controller
     public function store(Request $r,CitaMedica $cita)
     {
         Access::cita($cita,true);abort_unless(session('rol')==='Medico',403);
-        $d=$r->validate(['id_especialidad_destino'=>'required|integer|exists:especialidad,id_especialidad','prioridad'=>'required|in:Normal,Preferente,Urgente','motivo_clinico'=>'required|string|max:8000']);
+        $d=$r->validate(['id_especialidad_destino'=>['required','integer',Rule::exists('especialidad','id_especialidad')->where('estado','Activo')],'prioridad'=>'required|in:Rutinaria,Prioritaria,Urgente','motivo_clinico'=>'required|string|max:8000']);
         DB::transaction(function() use($cita,$d) {
             $c=CitaMedica::whereKey($cita->id_cita)->lockForUpdate()->firstOrFail();abort_unless(in_array($c->estado,['Confirmada','Atendida']),422,'La cita debe estar confirmada o atendida.');
             $code=DB::selectOne("SELECT 'DER-' || lpad(nextval('seq_codigo_derivacion')::text,4,'0') AS codigo")->codigo;

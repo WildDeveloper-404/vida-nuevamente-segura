@@ -17,7 +17,7 @@
             <a class="brand" href="{{ route(\App\Http\Controllers\AuthController::home(session('rol'))) }}"><span class="brand-icon"><i class="bi bi-heart-pulse" aria-hidden="true"></i></span><span>Vida Nuevamente<br><strong>Segura</strong></span></a>
             <div class="sidebar-caption">ESPACIO DE {{ mb_strtoupper(session('rol')) }}</div>
             <nav aria-label="Navegación principal" class="nav flex-column gap-1">
-                @php($menus = config('navigation.'.session('rol'),[]))
+                @php($menus = \App\Support\Access::menu())
                 @foreach($menus as $item)
                     <a class="nav-link {{ request()->routeIs($item[0].'*') ? 'active' : '' }}" href="{{ route($item[0]) }}"><i class="bi bi-{{ $item[2] }}" aria-hidden="true"></i>{{ $item[1] }}</a>
                 @endforeach

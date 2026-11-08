@@ -17,9 +17,17 @@ class PacienteController extends Controller
     public function store(Request $r)
     {
         $public=$r->routeIs('registro.store');
-        $d=$r->validate(['ci'=>'required|string|max:20|unique:persona,ci','nombres'=>'required|string|max:80','apellidos'=>'required|string|max:100','telefono'=>'required|string|max:20','direccion'=>'nullable|string|max:200','sexo'=>'required|in:M,F,O','fecha_nacimiento'=>'required|date|before_or_equal:today','correo'=>($public?'required':'nullable').'|email|max:120|unique:usuario,correo','password'=>($public?'required':'nullable').'|string|min:10|max:128|confirmed|required_with:correo']);
+        if (is_string($r->input('correo'))) {
+            $r->merge(['correo'=>mb_strtolower($r->input('correo'))]);
+        }
+        $emailRules = ['required','email','max:120'];
+        if ($public || $r->filled('password')) {
+            $emailRules[] = Rule::unique('usuario','correo');
+        }
+        $d=$r->validate(['ci'=>'required|string|max:20|unique:persona,ci','nombres'=>'required|string|max:80','apellidos'=>'required|string|max:100','telefono'=>'required|string|max:20','direccion'=>'nullable|string|max:200','sexo'=>'required|in:M,F,O','fecha_nacimiento'=>'required|date|before_or_equal:today','correo'=>$emailRules,'password'=>($public?'required':'nullable').'|string|min:10|max:128|confirmed']);
         DB::transaction(fn()=>DB::select('CALL sp_registrar_paciente_completo(?::varchar, ?::varchar, ?::varchar, ?::char, ?::date, ?::varchar, ?::varchar, ?::varchar, ?::varchar, ?::varchar, NULL, NULL)',[$d['ci'],$d['nombres'],$d['apellidos'],$d['sexo'],$d['fecha_nacimiento'],$d['telefono'],isset($d['correo'])?mb_strtolower($d['correo']):null,$d['direccion']??null,!empty($d['password'])?Hash::make($d['password']):null,null]));
-        return redirect()->route($public?'login':'recepcion.pacientes.index')->with('success','Paciente registrado correctamente.');
+        $destination = $public ? 'login' : ($r->routeIs('admin.*') ? 'admin.pacientes.index' : 'recepcion.pacientes.index');
+        return redirect()->route($destination)->with('success','Paciente registrado correctamente.');
     }
     public function edit(Paciente $paciente) { return view('pacientes.create',compact('paciente')); }
     public function update(Request $r,Paciente $paciente)

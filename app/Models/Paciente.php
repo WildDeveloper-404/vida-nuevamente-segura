@@ -7,7 +7,7 @@ class Paciente extends Model
     protected $primaryKey = 'id_paciente';
     public $timestamps = false;
     public $incrementing = false;
-    protected $fillable = ['id_paciente', 'codigo_paciente', 'sexo', 'fecha_nacimiento', 'estado', 'fecha_registro'];
+    protected $fillable = ['id_paciente', 'codigo_paciente', 'sexo', 'fecha_nacimiento', 'correo_contacto', 'estado', 'fecha_registro'];
     
     public function persona() { return $this->belongsTo(Persona::class, 'id_paciente'); } public function perfilClinico() { return $this->hasOne(PerfilClinico::class, 'id_paciente'); } public function citas() { return $this->hasMany(CitaMedica::class, 'id_paciente'); } public function getEdadAttribute(): int { return (int) \Carbon\Carbon::parse($this->fecha_nacimiento)->age; }
 }

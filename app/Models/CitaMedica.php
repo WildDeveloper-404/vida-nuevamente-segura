@@ -9,5 +9,20 @@ class CitaMedica extends Model
     
     protected $fillable = ['id_cita', 'codigo_cita', 'id_paciente', 'id_medico', 'id_especialidad', 'id_cita_anterior', 'fecha_cita', 'hora_inicio', 'hora_fin', 'motivo_consulta', 'estado', 'motivo_cancelacion', 'fecha_registro'];
     
+    protected $casts = ['arancel_reservado' => 'decimal:2'];
+
+    public function permiteCambioVoluntario(): bool
+    {
+        return in_array($this->estado, ['Programada', 'Confirmada'], true)
+            && now()->addMinutes(30)->lte(\Illuminate\Support\Carbon::parse($this->fecha_cita.' '.$this->hora_inicio));
+    }
+
+    public function contingencia()
+    {
+        return $this->hasOne(NotificacionCita::class, 'id_cita')->ofMany(
+            ['id_notificacion' => 'max'], fn ($q) => $q->where('tipo', 'Reprogramacion_Emergencia')
+        );
+    }
+
     public function paciente() { return $this->belongsTo(Paciente::class, 'id_paciente'); } public function medico() { return $this->belongsTo(Medico::class, 'id_medico'); } public function especialidad() { return $this->belongsTo(Especialidad::class, 'id_especialidad'); } public function pago() { return $this->hasOne(Pago::class, 'id_cita'); } public function receta() { return $this->hasOne(RecetaMedica::class, 'id_cita'); } public function anterior() { return $this->belongsTo(self::class, 'id_cita_anterior'); } public function reprogramaciones() { return $this->hasMany(self::class, 'id_cita_anterior'); } public function derivaciones() { return $this->hasMany(DerivacionMedica::class, 'id_cita_origen'); }
 }

@@ -15,7 +15,9 @@ class VozReporteController extends Controller
             Validator::make($plan,['especialidad'=>'nullable|string|max:100'])->validate();
             $q=DB::table('horario_atencion as h')->join('medico as m','m.id_medico','=','h.id_medico')->join('persona as p','p.id_persona','=','m.id_medico')->join('medico_especialidad as me','me.id_medico','=','m.id_medico')->join('especialidad as e','e.id_especialidad','=','me.id_especialidad')->where('h.estado','Activo')->where('m.estado','Activo')->where('e.estado','Activo')->selectRaw("p.nombres || ' ' || p.apellidos AS medico,e.nombre AS especialidad,h.dia_semana,h.hora_inicio,h.hora_fin");
             if($doctor) $q->where('m.id_medico',$doctor);
-            if(!empty($plan['especialidad'])) $q->where('e.nombre','ilike','%'.$plan['especialidad'].'%');
+            if(!empty($plan['especialidad'])) {
+                $q->whereRaw('unaccent(e.nombre) ILIKE unaccent(?::text)', ['%'.trim($plan['especialidad'], '%').'%']);
+            }
             $report=['columns'=>['medico'=>'Médico','especialidad'=>'Especialidad','dia_semana'=>'Día','hora_inicio'=>'Inicio','hora_fin'=>'Fin'],'rows'=>$q->limit(1000)->get()->all(),'totals'=>[],'sql'=>$q->toSql()];
         } else {
             $validated=Validator::make($plan,['campos'=>'required|array|min:1|max:20','campos.*'=>['required',Rule::in(array_keys(ReporteService::FIELDS))],'filtros'=>'nullable|array|max:10','filtros.*.campo'=>['required',Rule::in(array_keys(ReporteService::FIELDS))],'filtros.*.operador'=>['required',Rule::in(['=','!=','>','>=','<','<=','ilike'])],'filtros.*.valor'=>'required|string|max:200','orden'=>['required',Rule::in(array_keys(ReporteService::FIELDS))]])->validate();

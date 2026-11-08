@@ -7,7 +7,8 @@ class Pago extends Model
     protected $primaryKey = 'id_pago';
     public $timestamps = false;
     
-    protected $fillable = ['id_pago', 'id_cita', 'monto', 'metodo_pago', 'referencia_stripe', 'estado_pago', 'fecha_pago'];
+    protected $fillable = ['id_pago', 'id_cita', 'monto', 'moneda', 'metodo_pago', 'referencia_stripe', 'estado_pago', 'fecha_pago'];
     protected $casts = ['monto'=>'decimal:2'];
     public function cita() { return $this->belongsTo(CitaMedica::class, 'id_cita'); } public function comprobante() { return $this->hasOne(Comprobante::class, 'id_pago'); }
+    public function devolucion() { return $this->hasOne(DevolucionPago::class, 'id_pago'); }
 }

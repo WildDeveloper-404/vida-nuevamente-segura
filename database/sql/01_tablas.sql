@@ -3,7 +3,7 @@
 -- MOTOR: PostgreSQL 15+
 -- =============================================================================
 
-BEGIN;
+-- La transacción pertenece al instalador (clinica:instalar).
 
 -- Extensiones útiles para normalización de texto
 CREATE EXTENSION IF NOT EXISTS unaccent;
@@ -312,5 +312,3 @@ CREATE TABLE consulta_asistente_ia (
     fecha_hora TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_ia_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 );
-
-COMMIT;

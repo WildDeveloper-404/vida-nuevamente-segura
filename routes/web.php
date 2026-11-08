@@ -24,6 +24,8 @@ Route::prefix('admin')->name('admin.')->middleware('rol:Administrador')->group(f
     Route::post('modulos',[RolController::class,'modulo'])->name('modulos.store')->middleware('permiso:usuarios');
     Route::post('permisos',[RolController::class,'permiso'])->name('permisos.store')->middleware('permiso:usuarios');
     Route::get('bitacora',[BitacoraController::class,'index'])->name('bitacora')->middleware('permiso:auditoria');
+    Route::resource('pacientes',PacienteController::class)->only(['index','create','store'])->middleware('permiso:pacientes');
+    Route::get('contingencias',[EmergenciaController::class,'index'])->name('contingencias')->middleware('permiso:contingencias');
     Route::resource('especialidades',EspecialidadController::class)->only(['index','store','update'])->parameters(['especialidades'=>'especialidad'])->middleware('permiso:catalogos');
     Route::resource('medicos',MedicoController::class)->only(['index','store','update','destroy'])->middleware('permiso:catalogos');
     Route::get('horarios',[HorarioController::class,'index'])->name('horarios')->middleware('permiso:catalogos');
@@ -38,6 +40,7 @@ Route::prefix('admin')->name('admin.')->middleware('rol:Administrador')->group(f
 Route::prefix('recepcion')->name('recepcion.')->middleware('rol:Recepcionista')->group(function() {
     Route::view('/','dashboard')->name('dashboard');
     Route::get('pacientes/buscar',[PacienteController::class,'buscarPorCi'])->name('pacientes.buscar')->middleware('permiso:pacientes');
+    Route::get('citas/derivaciones',[CitaController::class,'derivaciones'])->name('citas.derivaciones')->middleware('permiso:citas');
     Route::resource('pacientes',PacienteController::class)->except('show')->middleware('permiso:pacientes');
     Route::get('citas',[HistorialCitaController::class,'index'])->name('citas')->middleware('permiso:citas');
     Route::get('citas/nueva',[CitaController::class,'create'])->name('citas.create')->middleware('permiso:citas');
@@ -69,7 +72,9 @@ Route::middleware(['rol:Recepcionista,Paciente','permiso:citas'])->group(functio
     Route::post('/citas/{cita}/reprogramar',[CitaController::class,'reprogramar'])->name('citas.reprogramar');
 });
 Route::post('/agenda/{cita}/estado',[AgendaMedicaController::class,'estado'])->middleware(['rol:Recepcionista,Medico','permiso:agenda'])->name('agenda.estado');
-Route::post('/contingencias',[EmergenciaController::class,'store'])->middleware(['rol:Recepcionista,Medico','permiso:contingencias'])->name('contingencias.store');
+Route::post('/contingencias',[EmergenciaController::class,'store'])->middleware(['rol:Administrador,Recepcionista,Medico','permiso:contingencias'])->name('contingencias.store');
+Route::post('/citas/{cita}/contingencia/{aviso}',[CitaController::class,'responderContingencia'])
+    ->whereNumber('aviso')->middleware(['rol:Paciente','permiso:citas'])->name('citas.contingencia');
 Route::middleware(['rol:Medico,Paciente','permiso:clinico'])->group(function() {
     Route::get('/perfil/{paciente}',[PerfilClinicoController::class,'show'])->name('perfil.show');
     Route::put('/perfil/{paciente}',[PerfilClinicoController::class,'update'])->name('perfil.update');
@@ -80,6 +85,7 @@ Route::middleware(['rol:Recepcionista,Paciente','permiso:pagos'])->group(functio
     Route::post('/pagos/{cita}/stripe',[PagoController::class,'iniciarPago'])->name('pagos.stripe');
     Route::post('/pagos/{cita}/presencial',[PagoController::class,'presencial'])->name('pagos.presencial');
     Route::get('/comprobantes/{pago}',[PagoController::class,'comprobante'])->name('pagos.comprobante');
+    Route::post('/comprobantes/{pago}/devolucion',[PagoController::class,'confirmarDevolucion'])->name('pagos.devolucion');
 });
 Route::post('/reportes/voz',[VozReporteController::class,'procesarVoz'])->middleware(['rol:Administrador,Medico','permiso:voz','throttle:10,1'])->name('voz.procesar');
 Route::get('/reportes/voz/exportar',[VozReporteController::class,'export'])->middleware(['rol:Administrador,Medico','permiso:voz'])->name('voz.export');

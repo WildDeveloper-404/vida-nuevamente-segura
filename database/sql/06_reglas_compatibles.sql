@@ -16,10 +16,28 @@ BEGIN
         NEW.codigo_cita := 'CM-' || LPAD(nextval('seq_codigo_cita')::TEXT, 4, '0');
     END IF;
 
+    IF TG_OP = 'INSERT' THEN
+        SELECT arancel_consulta INTO NEW.arancel_reservado FROM especialidad WHERE id_especialidad = NEW.id_especialidad;
+        NEW.moneda_reservada := COALESCE(NULLIF(current_setting('clinica.moneda', true), ''), 'usd');
+    ELSE
+        NEW.arancel_reservado := OLD.arancel_reservado;
+        NEW.moneda_reservada := OLD.moneda_reservada;
+        IF NEW.id_cita_anterior IS DISTINCT FROM OLD.id_cita_anterior THEN
+            IF OLD.id_cita_anterior IS NOT NULL OR NEW.id_cita_anterior = NEW.id_cita THEN
+                RAISE EXCEPTION 'No se puede cambiar el origen de la reprogramación.';
+            END IF;
+            SELECT arancel_reservado, moneda_reservada INTO NEW.arancel_reservado, NEW.moneda_reservada
+            FROM cita_medica WHERE id_cita = NEW.id_cita_anterior AND estado = 'Cancelada'
+                AND id_paciente = NEW.id_paciente AND id_medico = NEW.id_medico AND id_especialidad = NEW.id_especialidad;
+            IF NOT FOUND THEN RAISE EXCEPTION 'La cita original no coincide con la reprogramación.'; END IF;
+        END IF;
+    END IF;
+
     -- Los cambios de estado no deben revalidar horarios históricos ni impedir cancelar tras una baja.
     IF TG_OP = 'UPDATE' AND NEW.id_paciente = OLD.id_paciente AND NEW.id_medico = OLD.id_medico
        AND NEW.id_especialidad = OLD.id_especialidad AND NEW.fecha_cita = OLD.fecha_cita
        AND NEW.hora_inicio = OLD.hora_inicio AND NEW.hora_fin = OLD.hora_fin THEN
+        NEW.id_consultorio := OLD.id_consultorio;
         RETURN NEW;
     END IF;
 
@@ -79,7 +97,7 @@ BEGIN
     END;
 
     -- 7. Verificar que la cita esté dentro del horario de disponibilidad del médico (RN05 - Prueba #5)
-    SELECT duracion_minutos INTO v_duracion
+    SELECT duracion_minutos, id_consultorio INTO v_duracion, NEW.id_consultorio
     FROM horario_atencion
     WHERE id_medico = NEW.id_medico
       AND dia_semana = v_dia_nombre
