@@ -43,6 +43,9 @@ class AuthController extends Controller
     public function enviarTokenRecuperacion(Request $r)
     {
         $d=$r->validate(['correo'=>'required|email|max:120']);
+        if (config('app.env') === 'production' && config('mail.default') === 'log') {
+            return back()->with('success','Si el correo corresponde a una cuenta activa, recibirá un enlace temporal.');
+        }
         $u=Usuario::whereRaw('lower(correo) = ?', [mb_strtolower($d['correo'])])->where('estado','Activo')->first();
         if($u) {
             $token=Str::random(64);

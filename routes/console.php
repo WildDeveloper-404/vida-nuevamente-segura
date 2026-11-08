@@ -54,7 +54,7 @@ Artisan::command('clinica:admin', function() {
     DB::transaction(function() use($data) {$p=Persona::create(collect($data)->only(['ci','nombres','apellidos','telefono'])->all());PersonalAdministrativo::create(['id_personal'=>$p->id_persona,'cargo'=>'Administrador']);Usuario::create(['id_persona'=>$p->id_persona,'correo'=>$data['correo'],'password_hash'=>Hash::make($data['password']),'id_rol'=>Rol::where('nombre_rol','Administrador')->firstOrFail()->id_rol]);});$this->info('Administrador creado.');
 });
 Artisan::command('clinica:notificaciones', function() {
-    if(config('mail.default')==='log') {$this->warn('MAIL_MAILER=log: no se marcarán correos como enviados. Configure SMTP para el despacho real.');return 0;}
+    if(config('mail.default')==='log') {$this->warn('MAIL_MAILER=log: no se marcarán correos como enviados. Configure Brevo por API o SMTP para el despacho real.');return 0;}
     NotificacionCita::where('estado_envio','Pendiente')->where('enviar_desde','<=',now())->chunkById(50,function($rows) {
         foreach ($rows as $row) {
             DB::transaction(function () use ($row) {

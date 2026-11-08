@@ -73,6 +73,41 @@ class ClinicaTest extends TestCase
         $token=str_repeat('a',64);$u->update(['token_recuperacion'=>hash('sha256',$token),'token_expiracion'=>now()->addMinutes(30)]);
         $body=['correo'=>$u->correo,'token'=>$token,'password'=>'OtraClave123!','password_confirmation'=>'OtraClave123!'];$this->post('/restablecer',$body)->assertRedirect('/login');$this->assertTrue(Hash::check('OtraClave123!',$u->fresh()->password_hash));$this->post('/restablecer',$body)->assertSessionHasErrors('token');
     }
+    public function test_recuperacion_en_nube_no_genera_un_token_si_el_correo_solo_va_al_log(): void
+    {
+        config(['app.env'=>'production','mail.default'=>'log']);
+        $user=$this->user();
+        $this->post('/recuperar',['correo'=>$user->correo])->assertSessionHasNoErrors();
+        $this->assertNull($user->fresh()->token_recuperacion);
+    }
+
+    public function test_recuperacion_usa_brevo_por_https_con_el_remitente_configurado(): void
+    {
+        config([
+            'mail.default'=>'brevo',
+            'mail.mailers.brevo.key'=>'clave-ficticia',
+            'mail.from.address'=>'avisos@example.test',
+            'mail.from.name'=>'Clínica',
+        ]);
+        $user = $this->user();
+        $mailer = Mail::mailer('brevo');
+        $this->assertInstanceOf(\Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoApiTransport::class, $mailer->getSymfonyTransport());
+
+        $response = new \Symfony\Component\HttpClient\Response\MockResponse(
+            '{"messageId":"<demo@example.test>"}', ['http_code'=>201]
+        );
+        $client = new \Symfony\Component\HttpClient\MockHttpClient($response);
+        $mailer->setSymfonyTransport(new \Symfony\Component\Mailer\Bridge\Brevo\Transport\BrevoApiTransport('clave-ficticia', $client));
+
+        $this->post('/recuperar', ['correo'=>$user->correo])->assertSessionHasNoErrors();
+        $this->assertSame(1, $client->getRequestsCount());
+        $this->assertSame('https://api.brevo.com/v3/smtp/email', $response->getRequestUrl());
+        $payload = json_decode($response->getRequestOptions()['body'], true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame('avisos@example.test', $payload['sender']['email']);
+        $this->assertSame($user->correo, $payload['to'][0]['email']);
+        $this->assertNotNull($user->fresh()->token_recuperacion);
+    }
+
     public function test_reprogramacion_atomica_y_trazabilidad(): void
     {
         $d=$this->appointmentData();$s=app(CitaService::class);$c=$s->book($d,null);$new=$s->reschedule($c,['fecha_cita'=>$d['fecha_cita'],'hora_inicio'=>'10:00','motivo'=>'Cambio'],null);$this->assertSame($c->id_cita,$new->id_cita_anterior);$this->assertSame('Cancelada',$c->fresh()->estado);

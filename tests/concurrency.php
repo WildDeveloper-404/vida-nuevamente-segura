@@ -5,7 +5,7 @@ $app=require __DIR__.'/../bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 use App\Models\{Persona,Medico,Paciente,Especialidad,HorarioAtencion,CitaMedica};
 use Illuminate\Support\Facades\DB;
-if(!str_ends_with(config('database.connections.pgsql.database'),'_test')) throw new RuntimeException('Solo se permite una base con sufijo _test.');
+if(!str_ends_with(DB::connection()->getDatabaseName(),'_test')) throw new RuntimeException('Solo se permite una base con sufijo _test.');
 $token=bin2hex(random_bytes(6));
 $ids=DB::transaction(function() use($token) {
     $p=Persona::create(['ci'=>'CON-P'.$token,'nombres'=>'Paciente','apellidos'=>'Concurrencia','telefono'=>'000']);

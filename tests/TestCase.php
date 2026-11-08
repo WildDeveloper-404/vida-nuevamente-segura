@@ -8,7 +8,7 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        if(!str_ends_with(config('database.connections.pgsql.database'),'_test')) throw new \RuntimeException('Las pruebas requieren una base separada con sufijo _test.');
+        if(!str_ends_with(DB::connection()->getDatabaseName(),'_test')) throw new \RuntimeException('Las pruebas requieren una base separada con sufijo _test.');
         if(!DB::selectOne("SELECT to_regclass('public.persona') AS tabla")->tabla) Artisan::call('clinica:instalar',['--datos'=>true]);
         DB::beginTransaction();
     }

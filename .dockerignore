@@ -1,0 +1,16 @@
+.git
+.env
+.env.*
+.tools
+.phpunit.cache
+vendor
+node_modules
+tests
+docs
+database/sql/04_datos.txt
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*.php
+**/*.dump
