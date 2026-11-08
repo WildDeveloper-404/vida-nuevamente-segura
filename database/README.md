@@ -48,13 +48,9 @@ Desde la raíz del proyecto:
 agrega los permisos utilizados por las rutas. No crea contraseñas conocidas ni
 un administrador por defecto; el segundo comando permite crearlo.
 
-Para agregar pacientes, médicos, turnos y movimientos ficticios en desarrollo:
-
-```powershell
-& '.tools/php/php.exe' artisan clinica:datos-ejemplo
-```
-
-Ese comando está restringido al entorno local y evita repetir su lote de datos.
+Para la demostración, crea pacientes, médicos y turnos ficticios desde la
+aplicación y asigna contraseñas distintas a las cuentas. La instalación sólo
+carga los catálogos iniciales.
 
 El instalador ejecuta **una sola transacción**, con bloqueo de instalación:
 
