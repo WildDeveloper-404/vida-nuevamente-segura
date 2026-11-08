@@ -30,7 +30,7 @@ Artisan::command('clinica:compatibilidad {--moneda-anterior=usd : Moneda de los 
     $this->info('Esquema y funciones actualizados. Los registros existentes se conservaron.');
 });
 Artisan::command('clinica:permisos', function() {
-    $matrix=['usuarios'=>['Administrador'],'catalogos'=>['Administrador'],'auditoria'=>['Administrador'],'pacientes'=>['Administrador','Recepcionista'],'citas'=>['Recepcionista','Paciente'],'agenda'=>['Recepcionista','Medico'],'contingencias'=>['Administrador','Recepcionista','Medico'],'clinico'=>['Medico','Paciente'],'pagos'=>['Recepcionista','Paciente'],'reportes'=>['Administrador','Recepcionista'],'qbe'=>['Administrador'],'voz'=>['Administrador','Medico']];
+    $matrix=['usuarios'=>['Administrador'],'catalogos'=>['Administrador'],'auditoria'=>['Administrador'],'pacientes'=>['Administrador','Recepcionista'],'citas'=>['Recepcionista','Paciente'],'agenda'=>['Recepcionista','Medico'],'contingencias'=>['Administrador','Recepcionista','Medico'],'clinico'=>['Medico','Paciente'],'pagos'=>['Recepcionista','Paciente'],'reportes'=>['Administrador','Recepcionista'],'qbe'=>['Administrador'],'voz'=>['Administrador','Recepcionista','Medico']];
     DB::transaction(function() use($matrix) {
         $module=Modulo::firstOrCreate(['nombre_modulo'=>'Operaciones de la clínica']);
         foreach($matrix as $name=>$roles) {
@@ -39,6 +39,14 @@ Artisan::command('clinica:permisos', function() {
         }
     });$this->info('Permisos iniciales configurados. No ejecute este comando para sobrescribir ajustes posteriores.');
 });
+Artisan::command('clinica:habilitar-voz-recepcion', function() {
+    DB::transaction(function () {
+        $role=Rol::where('nombre_rol','Recepcionista')->firstOrFail();
+        $permission=Permiso::where('nombre_permiso','voz')->firstOrFail();
+        $role->permisos()->syncWithoutDetaching([$permission->id_permiso]);
+    });
+    $this->info('Permiso de voz habilitado para Recepción. Los demás permisos se conservaron.');
+})->purpose('Habilitar reportes por voz para Recepción en una base existente');
 Artisan::command('clinica:admin', function() {
     $data=['ci'=>$this->ask('CI'),'nombres'=>$this->ask('Nombres'),'apellidos'=>$this->ask('Apellidos'),'telefono'=>$this->ask('Teléfono'),'correo'=>mb_strtolower($this->ask('Correo')),'password'=>$this->secret('Contraseña (mínimo 10 caracteres)')];
     $validator=validator($data,['ci'=>'required|max:20|unique:persona,ci','nombres'=>'required|max:80','apellidos'=>'required|max:100','telefono'=>'required|max:20','correo'=>'required|email|max:120|unique:usuario,correo','password'=>'required|min:10|max:128']);

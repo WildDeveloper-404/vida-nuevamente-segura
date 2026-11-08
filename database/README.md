@@ -32,7 +32,7 @@ Los requisitos RF01–RF27 detallan y amplían esos casos. Consulta también
 | CU15 | Interactuar con Angélica | `consulta_asistente_ia` y consultas autorizadas de especialidades, médicos, horarios y citas. |
 | CU16 | Generar reportes administrativos | Consultas sobre las tablas de negocio, sin duplicar sus datos; pagos agrupados por moneda y devoluciones. |
 | CU17 | Generar reportes QBE | Tablas de negocio consultadas con columnas autorizadas y filtros parametrizados desde el backend. |
-| CU18 | Generar reportes por voz con IA | `consulta_asistente_ia` y tablas de negocio; validación del plan y permisos en el backend. |
+| CU18 | Generar reportes por voz con IA | `consulta_asistente_ia` y tablas de negocio; Administrador, Recepción y Médico. Validación del plan y permisos en el backend; el médico consulta sólo su actividad. |
 
 ## Instalar una base vacía
 
@@ -92,6 +92,17 @@ pago; no es posible reconstruir otro arancel histórico sin una fuente adicional
 Si existen intervalos superpuestos, las exclusiones rechazan la actualización
 y se revierte la transacción: se deben revisar esos registros antes de repetirla.
 No se borran ni corrigen citas automáticamente.
+
+Para habilitar el acceso de voz de Recepción en una base ya instalada, ejecutar:
+
+```powershell
+& '.tools/php/php.exe' artisan clinica:habilitar-voz-recepcion
+```
+
+El comando agrega únicamente esa relación de permiso y conserva las demás
+asignaciones. Las instalaciones nuevas ya incluyen los tres perfiles con voz.
+La actualización general no vuelve a conceder este permiso si posteriormente
+se revoca desde Administración.
 
 ## Archivos anteriores que no se cargan
 

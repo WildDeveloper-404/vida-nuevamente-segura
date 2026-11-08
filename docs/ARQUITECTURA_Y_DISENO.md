@@ -121,7 +121,7 @@ Un tercer control comprueba la **propiedad del registro**. El paciente sólo pue
 | Rol | Funciones principales |
 | --- | --- |
 | Administrador | Usuarios, roles, permisos, catálogos, médicos, horarios, bitácora, informes, QBE e informes por voz. |
-| Recepcionista | Pacientes, reserva e historial de citas, agenda, contingencias, pagos presenciales e informes. |
+| Recepcionista | Pacientes, reserva e historial de citas, agenda, contingencias, pagos presenciales, informes e informes por voz. |
 | Médico | Agenda propia, estados de atención, perfil clínico autorizado, recetas, derivaciones, contingencias e informes por voz limitados a su actividad. |
 | Paciente | Registro, reserva y seguimiento de sus citas, pago, comprobantes y perfil clínico propio. |
 

@@ -104,3 +104,30 @@ Referencia de los errores del navegador:
 [SpeechRecognitionErrorEvent.error, MDN](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognitionErrorEvent/error).
 
 ![Error de conexión del servicio de reconocimiento](evidencias/voz-error-navegador.png)
+
+## Reportes y acceso de Recepción — 8 de noviembre de 2026
+
+La opción de detalle se llama **Citas por fecha**. Se corrigió el filtro implícito
+de `Programada`, que excluía las canceladas y entraba en contradicción con el
+estado seleccionado. Ahora, sin filtro de estado, devuelve el detalle de todos
+los estados del período; al elegir `Cancelada`, devuelve sólo las canceladas.
+La pantalla explica cómo obtener ese detalle.
+
+Se verificó desde el navegador como Administrador el período del 1 al 30 de
+noviembre de 2026, con estado Cancelada: aparece CM-0015, de Lucía Rivas. Se
+descargaron correctamente `reporte.pdf` y `reporte.xlsx` a Descargas.
+
+Los reportes por voz permiten **Administrador, Recepcionista y Médico** en la
+pantalla, consulta y exportaciones. Recepción tiene una entrada propia en el
+menú (`/recepcion/voz`). El Médico conserva el filtro de su propia actividad;
+Paciente no obtiene acceso. El permiso `voz` se sigue verificando en cada petición.
+La base local recibió el permiso de Recepción con el comando específico, sin
+restablecer el conjunto de permisos de otros módulos.
+
+Tres pruebas nuevas cubren el reporte cancelado y sus archivos PDF/Excel, los
+tres perfiles de voz y la revocación del permiso de Recepción. La suite completa
+aprobó **50 pruebas y 278 aserciones** sobre una base nueva,
+`clinica_reportes_20261108_test`, en 45,806 segundos. El resultado está en
+[pruebas.xml](pruebas.xml).
+
+![Filtros y descargas del reporte corregido](evidencias/reporte-fecha-cancelada.png)

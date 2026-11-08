@@ -148,3 +148,13 @@ de micrófono, transcripción y reporte por confirmación del usuario. Sigue doc
 la incidencia de conexión `network` del navegador integrado. Quedan la revisión
 visual completa de Administrador y Recepción y la activación permanente del
 programador sobre la base de uso habitual.
+
+### Corrección de reportes y ampliación de voz a Recepción
+
+El 8 de noviembre se corrigió el filtro oculto de Programada de **Citas por fecha**.
+Se verificaron la cita cancelada CM-0015 y las descargas PDF/Excel desde el
+Administrador. Se habilitó voz para Recepción en rutas, menú y permiso de la base
+local. Administrador y Recepción pueden consultar el alcance administrativo;
+Médico conserva exclusivamente su actividad. Se comprobó también la revocación
+del permiso y el rechazo de Paciente. La suite final aprobó **50 pruebas y
+278 aserciones** en una instalación nueva; [pruebas.xml](pruebas.xml).

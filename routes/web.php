@@ -47,6 +47,7 @@ Route::prefix('recepcion')->name('recepcion.')->middleware('rol:Recepcionista')-
     Route::get('agenda',[AgendaMedicaController::class,'index'])->name('agenda')->middleware('permiso:agenda');
     Route::get('contingencias',[EmergenciaController::class,'index'])->name('contingencias')->middleware('permiso:contingencias');
     Route::get('reportes',[ReporteController::class,'index'])->name('reportes')->middleware('permiso:reportes');
+    Route::get('voz',[VozReporteController::class,'index'])->name('voz')->middleware('permiso:voz');
 });
 Route::prefix('medico')->name('medico.')->middleware('rol:Medico')->group(function() {
     Route::get('/',[AgendaMedicaController::class,'index'])->name('dashboard');
@@ -87,5 +88,5 @@ Route::middleware(['rol:Recepcionista,Paciente','permiso:pagos'])->group(functio
     Route::get('/comprobantes/{pago}',[PagoController::class,'comprobante'])->name('pagos.comprobante');
     Route::post('/comprobantes/{pago}/devolucion',[PagoController::class,'confirmarDevolucion'])->name('pagos.devolucion');
 });
-Route::post('/reportes/voz',[VozReporteController::class,'procesarVoz'])->middleware(['rol:Administrador,Medico','permiso:voz','throttle:10,1'])->name('voz.procesar');
-Route::get('/reportes/voz/exportar',[VozReporteController::class,'export'])->middleware(['rol:Administrador,Medico','permiso:voz'])->name('voz.export');
+Route::post('/reportes/voz',[VozReporteController::class,'procesarVoz'])->middleware(['rol:Administrador,Recepcionista,Medico','permiso:voz','throttle:10,1'])->name('voz.procesar');
+Route::get('/reportes/voz/exportar',[VozReporteController::class,'export'])->middleware(['rol:Administrador,Recepcionista,Medico','permiso:voz'])->name('voz.export');

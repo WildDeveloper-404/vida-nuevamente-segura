@@ -30,7 +30,7 @@ Actualizado el 8 de noviembre de 2026. Los identificadores corresponden al archi
 | RF24 | Angélica informa sobre horarios, especialidades y citas propias. La CI sólo se acepta para el paciente autenticado que corresponde al documento. |
 | RF25 | Reportes con filtros, subtotales, PDF y Excel. Las sumas de cobros separan BOB y USD y excluyen devoluciones finalizadas. |
 | RF26 | QBE con columnas autorizadas, filtros parametrizados y exportación. Incluye arancel reservado, moneda y estado de devolución. |
-| RF27 | Micrófono con entrada escrita alternativa, plan JSON validado de Gemini, consulta de lectura y alcance restringido para el médico. |
+| RF27 | Disponible para Administrador, Recepcionista y Médico. Micrófono con entrada escrita alternativa, plan JSON validado de Gemini, consulta de lectura y alcance restringido a la actividad propia para el médico. |
 
 ## Configuración
 

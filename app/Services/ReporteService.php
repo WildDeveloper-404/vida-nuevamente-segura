@@ -80,7 +80,6 @@ class ReporteService
             }
             $rows=$q->groupByRaw($group)->orderBy('grupo')->limit(1001)->get()->all();
         } else {
-            if($type==='fecha') $q->where('c.estado','Programada');
             $rows=$q->selectRaw("c.codigo_cita AS codigo,c.fecha_cita AS fecha,c.hora_inicio AS hora,pp.nombres || ' ' || pp.apellidos AS paciente,pm.nombres || ' ' || pm.apellidos AS medico,e.nombre AS especialidad,c.estado")->orderBy('c.fecha_cita')->orderBy('c.hora_inicio')->limit(1001)->get()->all();
         }
         if(count($rows)>1000) throw ValidationException::withMessages(['desde'=>'El informe supera 1000 filas. Reduzca el período.']);
