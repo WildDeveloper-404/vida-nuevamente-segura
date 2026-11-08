@@ -10,9 +10,44 @@
     const send = async message => {
         if (!message.trim() || busy) return;
         busy = true; bubble(message, true); input.value = ''; form.querySelector('button').disabled = true;
-        try { const response = await fetch(form.dataset.url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }, body: JSON.stringify({ mensaje: message }) }); const data = await response.json(); bubble(response.ok ? data.respuesta : (data.message || 'No se pudo procesar el mensaje.')); }
+        try {
+            const response = await fetch(form.dataset.url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                body: JSON.stringify({ mensaje: message }),
+            });
+            const data = await response.json();
+            bubble(response.ok ? data.respuesta : (data.message || 'No se pudo procesar el mensaje.'));
+            if (response.ok) renderActions(data);
+        }
         catch { bubble('No hay conexión con el asistente. Inténtelo nuevamente.'); }
         finally { busy = false; form.querySelector('button').disabled = false; }
+    };
+    const renderActions = ({ opciones = [], enlace }) => {
+        const actions = document.createElement('div');
+        actions.className = 'chat-quick';
+        for (const option of opciones) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-sm btn-outline-primary';
+            button.textContent = option;
+            button.addEventListener('click', () => send(option));
+            actions.append(button);
+        }
+        if (enlace) {
+            const url = new URL(enlace.url, window.location.origin);
+            if (url.origin === window.location.origin) {
+                const link = document.createElement('a');
+                link.className = 'btn btn-sm btn-outline-primary';
+                link.href = url.href;
+                link.textContent = enlace.texto;
+                actions.append(link);
+            }
+        }
+        if (actions.childElementCount) {
+            log.append(actions);
+            log.scrollTop = log.scrollHeight;
+        }
     };
     form.addEventListener('submit', e => { e.preventDefault(); send(input.value); });
     document.querySelectorAll('[data-chat]').forEach(button => button.addEventListener('click', () => send(button.dataset.chat)));

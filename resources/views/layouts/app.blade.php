@@ -47,7 +47,7 @@
 <section id="chat-panel" class="chat-panel shadow" hidden aria-label="Asistente Angélica">
     <header class="chat-header"><div><strong>Angélica</strong><small>Asistente de la clínica</small></div><button type="button" id="chat-close" class="btn btn-sm text-white" aria-label="Cerrar chat"><i class="bi bi-x-lg"></i></button></header>
     <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"><p class="chat-bubble">Hola, soy Angélica. ¿En qué puedo ayudarle?</p></div>
-    <div class="chat-quick">@foreach(['Especialidades','Horarios y médicos','Mis citas','Requisitos'] as $q)<button type="button" class="btn btn-sm btn-outline-primary" data-chat="{{ $q }}">{{ $q }}</button>@endforeach</div>
+    <div class="chat-quick">@foreach(['Especialidades','Horarios y médicos','Mis citas','Requisitos','Ayúdame a elegir una especialidad'] as $q)<button type="button" class="btn btn-sm btn-outline-primary" data-chat="{{ $q }}">{{ $q }}</button>@endforeach</div>
     <form id="chat-form" class="chat-form" data-url="{{ route('chatbot') }}"><label class="visually-hidden" for="chat-input">Mensaje</label><input id="chat-input" class="form-control" maxlength="500" placeholder="Escriba su consulta…" required><button class="btn btn-primary" aria-label="Enviar mensaje"><i class="bi bi-send"></i></button></form>
 </section>
 <button id="chat-toggle" class="chat-toggle" aria-controls="chat-panel" aria-expanded="false" aria-label="Abrir asistente Angélica"><i class="bi bi-chat-heart"></i></button>
