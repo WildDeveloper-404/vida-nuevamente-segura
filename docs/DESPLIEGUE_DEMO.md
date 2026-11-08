@@ -92,6 +92,12 @@ cuentas y demás registros se guardan en Supabase.
 
 ## Rama y revisión
 
+El contenedor usa PHP 8.5 y las contraseñas nuevas se guardan con Argon2id.
+El inicio de sesión acepta las cuentas bcrypt existentes y actualiza su hash
+después de verificar correctamente la contraseña, dentro de la misma transacción.
+La configuración conserva la verificación del algoritmo para cada hasher.
+Argon2id usa 64 MiB de memoria, cuatro iteraciones y un hilo por operación.
+
 Usa `despliegue-supabase` como rama de origen del servicio de demostración.
 Cuando el ensayo en nube pase, abre un pull request con base `main` y compara
 `despliegue-supabase`. Después de revisar y fusionar el pull request, puedes

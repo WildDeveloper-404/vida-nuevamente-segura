@@ -23,8 +23,14 @@ class AuthController extends Controller
         $user=DB::transaction(function() use($d,$r) {
             $u=Usuario::whereRaw('lower(correo) = ?', [mb_strtolower(trim($d['correo']))])->lockForUpdate()->first();
             $eligible=$u && $u->estado==='Activo' && (!$u->bloqueado_hasta || $u->bloqueado_hasta->isPast());
-            $ok=$eligible && Hash::check($d['password'],$u->password_hash);
+            $hasher = $eligible && password_get_info($u->password_hash)['algoName'] === 'bcrypt'
+                ? Hash::driver('bcrypt')
+                : Hash::driver();
+            $ok=$eligible && $hasher->check($d['password'],$u->password_hash);
             $result=DB::select('SELECT * FROM fn_registrar_intento_login(?::varchar, ?::boolean, ?::varchar)',[$d['correo'],$ok?'true':'false',$r->ip()])[0];
+            if ($ok && $result->permitido && Hash::needsRehash($u->password_hash)) {
+                $u->update(['password_hash' => Hash::make($d['password'])]);
+            }
             return ['usuario'=>$u,'resultado'=>$result];
         });
         if(!$user['resultado']->permitido) throw ValidationException::withMessages(['correo'=>$user['resultado']->mensaje]);

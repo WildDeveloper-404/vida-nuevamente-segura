@@ -158,3 +158,17 @@ local. Administrador y Recepción pueden consultar el alcance administrativo;
 Médico conserva exclusivamente su actividad. Se comprobó también la revocación
 del permiso y el rechazo de Paciente. La suite final aprobó **50 pruebas y
 278 aserciones** en una instalación nueva; [pruebas.xml](pruebas.xml).
+
+### PHP 8.5 y contraseñas Argon2id
+
+El 8 de noviembre de 2026 se actualizó el contenedor de PHP 8.3 a PHP 8.5.12.
+Las contraseñas nuevas usan Argon2id con 64 MiB, cuatro iteraciones y un hilo.
+Las cuentas bcrypt existentes se verifican con su algoritmo original y se
+actualizan a Argon2id tras un acceso correcto, bajo el bloqueo de la transacción
+de autenticación. La sesión se crea usando el hash actualizado.
+
+La imagen compiló desde el archivo de dependencias existente y pasó
+`composer check-platform-reqs --no-dev`. `/up` y `/login` respondieron HTTP 200
+en local. La suite completa en PHP 8.5.12 y una base PostgreSQL aislada pasó
+54 pruebas y 297 aserciones. Incluye contraseña incorrecta sin modificación
+del hash, migración desde bcrypt y continuidad del acceso al panel.
