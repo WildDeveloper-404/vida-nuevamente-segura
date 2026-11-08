@@ -24,7 +24,8 @@ BEGIN
     SELECT u.*, r.nombre_rol INTO v_user
     FROM usuario u
     INNER JOIN rol r ON u.id_rol = r.id_rol
-    WHERE LOWER(u.correo) = LOWER(TRIM(p_correo));
+    WHERE LOWER(u.correo) = LOWER(TRIM(p_correo))
+    FOR UPDATE OF u;
 
     IF NOT FOUND THEN
         RETURN QUERY SELECT FALSE, 'El correo o la contraseña son incorrectos'::VARCHAR, NULL::INT, NULL::INT, NULL::VARCHAR;
@@ -37,7 +38,7 @@ BEGIN
     END IF;
 
     IF v_user.bloqueado_hasta IS NOT NULL AND v_user.bloqueado_hasta > CURRENT_TIMESTAMP THEN
-        RETURN QUERY SELECT FALSE, ('Demasiados intentos fallidos. Intente nuevamente después de ' || TO_CHAR(v_user.bloqueado_hasta, 'HH24:MI:SS'))::VARCHAR, NULL::INT, NULL::INT, NULL::VARCHAR;
+        RETURN QUERY SELECT FALSE, ('Demasiados intentos fallidos. Intente nuevamente después del ' || TO_CHAR(v_user.bloqueado_hasta, 'DD/MM/YYYY HH24:MI'))::VARCHAR, NULL::INT, NULL::INT, NULL::VARCHAR;
         RETURN;
     END IF;
 
@@ -53,15 +54,11 @@ BEGIN
     ELSE
         v_user.intentos_fallidos := v_user.intentos_fallidos + 1;
         IF (v_user.intentos_fallidos % 3) = 0 THEN
-            -- Bloqueo progresivo (Nivel 1: 1 min, Nivel 2: 5 min, Nivel 3+: 15 min)
-            v_minutos_bloqueo := CASE 
-                WHEN v_user.intentos_fallidos = 3 THEN 1
-                WHEN v_user.intentos_fallidos = 6 THEN 5
-                ELSE 15
-            END;
+            -- Cada tres fallos, duplicar los 15 minutos iniciales hasta 16 horas.
+            v_minutos_bloqueo := 15 * (1 << LEAST(v_user.intentos_fallidos / 3 - 1, 6));
             UPDATE usuario 
             SET intentos_fallidos = v_user.intentos_fallidos,
-                bloqueado_hasta = CURRENT_TIMESTAMP + (v_minutos_bloqueo || ' minutes')::INTERVAL
+                bloqueado_hasta = CURRENT_TIMESTAMP + make_interval(mins => v_minutos_bloqueo)
             WHERE id_usuario = v_user.id_usuario;
         ELSE
             UPDATE usuario SET intentos_fallidos = v_user.intentos_fallidos WHERE id_usuario = v_user.id_usuario;
@@ -70,7 +67,10 @@ BEGIN
         INSERT INTO bitacora (id_usuario, modulo, accion, descripcion, direccion_ip)
         VALUES (v_user.id_usuario, 'Seguridad', 'LOGIN_FALLIDO', 'Intento fallido #' || v_user.intentos_fallidos, p_ip);
 
-        RETURN QUERY SELECT FALSE, 'El correo o la contraseña son incorrectos'::VARCHAR, NULL::INT, NULL::INT, NULL::VARCHAR;
+        RETURN QUERY SELECT FALSE, COALESCE(
+            'Demasiados intentos fallidos. Cuenta bloqueada durante ' || v_minutos_bloqueo || ' minutos.',
+            'El correo o la contraseña son incorrectos'
+        )::VARCHAR, NULL::INT, NULL::INT, NULL::VARCHAR;
     END IF;
 END;
 $$ LANGUAGE plpgsql;

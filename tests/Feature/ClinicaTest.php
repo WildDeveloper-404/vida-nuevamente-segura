@@ -63,10 +63,39 @@ class ClinicaTest extends TestCase
     {
         $u=$this->user();for($i=0;$i<3;$i++)$this->post('/login',['correo'=>$u->correo,'password'=>'incorrecta'])->assertSessionHasErrors('correo');
         $this->assertSame(3,$u->fresh()->intentos_fallidos);$this->assertTrue($u->fresh()->bloqueado_hasta->isFuture());
+        $this->assertSame(15, $this->remainingLoginBlockMinutes($u));
         $this->post('/login',['correo'=>$u->correo,'password'=>'ClavePrueba123!'])->assertSessionHasErrors('correo');
         $u->update(['bloqueado_hasta'=>null]);$this->post('/login',['correo'=>$u->correo,'password'=>'ClavePrueba123!'])->assertRedirect('/admin');$this->assertSame(0,$u->fresh()->intentos_fallidos);
         $u->update(['estado'=>'Inactivo']);$this->get('/admin')->assertRedirect('/login');
     }
+    public function test_bloqueo_duplica_la_duracion_cada_tres_fallos_hasta_16_horas(): void
+    {
+        $user = $this->user();
+        $durations = [3 => 15, 6 => 30, 9 => 60, 12 => 120, 15 => 240, 18 => 480, 21 => 960, 24 => 960];
+
+        foreach ($durations as $attempts => $minutes) {
+            for ($i = 0; $i < 3; $i++) {
+                DB::selectOne('SELECT * FROM fn_registrar_intento_login(?, false)', [$user->correo]);
+            }
+            $this->assertSame($attempts, $user->fresh()->intentos_fallidos);
+            $this->assertSame($minutes, $this->remainingLoginBlockMinutes($user));
+
+            DB::selectOne('SELECT * FROM fn_registrar_intento_login(?, false)', [$user->correo]);
+            $this->assertSame($attempts, $user->fresh()->intentos_fallidos);
+            $this->assertSame($minutes, $this->remainingLoginBlockMinutes($user));
+
+            DB::table('usuario')->where('id_usuario', $user->id_usuario)
+                ->update(['bloqueado_hasta' => DB::raw("LOCALTIMESTAMP - INTERVAL '1 second'")]);
+        }
+    }
+
+    private function remainingLoginBlockMinutes(Usuario $user): int
+    {
+        return (int) DB::table('usuario')->where('id_usuario', $user->id_usuario)
+            ->selectRaw('round(extract(epoch from (bloqueado_hasta - LOCALTIMESTAMP)) / 60) AS minutes')
+            ->first()->minutes;
+    }
+
     public function test_recuperacion_hash_expiracion_y_token_de_un_solo_uso(): void
     {
         Mail::fake();$u=$this->user();$this->post('/recuperar',['correo'=>$u->correo])->assertSessionHasNoErrors();$this->assertNotNull($u->fresh()->token_recuperacion);
