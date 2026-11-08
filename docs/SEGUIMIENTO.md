@@ -172,3 +172,10 @@ La imagen compiló desde el archivo de dependencias existente y pasó
 en local. La suite completa en PHP 8.5.12 y una base PostgreSQL aislada pasó
 54 pruebas y 297 aserciones. Incluye contraseña incorrecta sin modificación
 del hash, migración desde bcrypt y continuidad del acceso al panel.
+
+Railway desplegó correctamente el cambio `093046c`. El administrador autorizado
+inició sesión con su contraseña existente y abrió el panel público con HTTP 200.
+La verificación posterior en Supabase confirmó Argon2id en su `password_hash` y
+cero cuentas pendientes de migración. El esquema de la demo tiene 25 tablas con
+RLS activo y ocho especialidades. Las integraciones externas y el programador
+de tareas todavía requieren la validación desde el entorno de nube.
