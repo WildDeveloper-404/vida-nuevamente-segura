@@ -132,3 +132,12 @@ La regresión final aprobó **47 pruebas y 238 aserciones**. La prueba con micr�
 la revisión visual completa de los otros dos perfiles y la activación permanente
 del programador sobre la base de uso habitual siguen pendientes. Detalles,
 condiciones y capturas en [INTEGRACIONES_LOCALES.md](INTEGRACIONES_LOCALES.md).
+
+### Seguimiento del micrófono
+
+Tras el aviso del usuario se reprodujo un error `network` del reconocimiento
+de voz en el navegador integrado. Se añadieron mensajes específicos y correcciones
+del ciclo de inicio, parada y reintento, con seis pruebas JavaScript aprobadas.
+La consulta escrita con Gemini sigue validada; la transcripción física queda
+pendiente de repetir con el usuario en Chrome o Edge. Detalles y captura en
+[INTEGRACIONES_LOCALES.md](INTEGRACIONES_LOCALES.md#diagnóstico-de-captura-de-voz--8-de-noviembre-de-2026).

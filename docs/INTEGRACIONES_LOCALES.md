@@ -14,7 +14,7 @@ Fecha: 8 de noviembre de 2026, zona horaria America/Caracas.
 | Gemini | API real con `gemini-3.5-flash`, razonamiento `high`; interpretación de filtros y consulta desde la pantalla del médico | Aprobado por entrada escrita |
 | Angélica | Consulta de especialidades desde el chat del paciente | Aprobado; este flujo usa las respuestas de la aplicación, no Gemini |
 | Perfiles | Regresión automatizada de permisos y vistas; recorrido manual del portal de paciente y del médico | Automatización aprobada; revisión visual completa de Administrador y Recepción pendiente |
-| Micrófono | Captura física de voz y permiso del navegador | Pendiente de prueba con el usuario |
+| Micrófono | Inicio de captura desde el navegador integrado y diagnóstico del evento de error | Se reprodujo `network`; pendiente repetir la captura física en Chrome o Edge |
 
 ## Evidencia de Stripe Test
 
@@ -77,3 +77,29 @@ servicio o el sistema operativo.
 El usuario confirmó la recepción de los dos correos el 8 de noviembre de 2026.
 La captura con micrófono sigue pendiente: es una comprobación distinta de la
 consulta escrita aprobada.
+
+## Diagnóstico de captura de voz — 8 de noviembre de 2026
+
+El usuario informó que aparecía el mensaje genérico de captura fallida. Se
+reprodujo el inicio de reconocimiento desde el navegador integrado: primero
+mostró «Escuchando» y después recibió `SpeechRecognitionErrorEvent.error=network`.
+El fallo se produce en la conexión con el servicio de reconocimiento del
+navegador, antes de enviar una consulta escrita al backend o a Gemini. Esto no
+demuestra todavía que el micrófono pueda transcribir correctamente en otro navegador.
+
+Se reemplazó el mensaje genérico por diagnósticos diferenciados de conexión,
+permiso, dispositivo, silencio, idioma y servicio no permitido. También se
+evitan inicios simultáneos, se conserva el texto ante errores, se restablece el
+botón para reintentar y se distinguen los estados Hablar/Detener. El script de
+la pantalla usa una versión por fecha de modificación para evitar una copia
+anterior en caché.
+
+Las seis pruebas JavaScript de errores y ciclo de captura pasaron con
+`node --test tests/js/voz.test.cjs`; `node --check public/js/voz.js` y la compilación
+Blade también pasaron. La siguiente comprobación requiere voz real del usuario
+en Chrome o Edge. No se considera resuelto el reconocimiento físico.
+
+Referencia de los errores del navegador:
+[SpeechRecognitionErrorEvent.error, MDN](https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognitionErrorEvent/error).
+
+![Error de conexión del servicio de reconocimiento](evidencias/voz-error-navegador.png)
