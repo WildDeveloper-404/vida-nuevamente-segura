@@ -1,0 +1,1 @@
+OK: dos procesos simultáneos; una reserva creada, una rechazada; una sola cita persistida.

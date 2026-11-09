@@ -1,0 +1,20 @@
+[
+    {
+        "formato": "webm",
+        "http": 200,
+        "transcripcion": "Mostrar citas canceladas de este mes.",
+        "aprobado": true
+    },
+    {
+        "formato": "ogg",
+        "http": 200,
+        "transcripcion": "Mostrar citas canceladas de este mes",
+        "aprobado": true
+    },
+    {
+        "formato": "mp4",
+        "http": 200,
+        "transcripcion": "Mostrar citas canceladas de este mes.",
+        "aprobado": true
+    }
+]

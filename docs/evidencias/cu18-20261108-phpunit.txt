@@ -1,0 +1,96 @@
+PHPUnit 11.5.57 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.36
+Configuration: C:\Users\Sebas\Desktop\VIDA NUEVAMENTE SEGURA\PROYECTO VIDA NUEVAMENTE SEGURA\phpunit.xml
+
+................................................................. 65 / 67 ( 97%)
+..                                                                67 / 67 (100%)
+
+Time: 01:00.812, Memory: 86.00 MB
+
+Additional Flows (Tests\Feature\AdditionalFlows)
+ ✔ Pago se traslada al reprogramar y webhook anterior sigue idempotente
+ ✔ Receta pdf qr y comprobante pdf
+ ✔ Administracion crea medico y usuario y bajas logicas
+ ✔ Estado atendida no se puede reabrir y no borrado fisico
+ ✔ Duracion correcta cuando los dias tienen intervalos distintos
+ ✔ Contingencia sin cupo revierte bloqueo y todos los traslados
+ ✔ Derivacion reserva destino y actualiza estado
+
+Casos De Uso Aceptacion (Tests\Feature\CasosDeUsoAceptacion)
+ ✔ Cu02 asignacion y revocacion desde la ruta administrativa
+ ✔ Cu03 filtra actor modulo accion y exporta bitacora
+ ✔ Cu04 edita catalogo y rechaza rango etario invertido
+ ✔ Cu05 alta consultorio turno y baja protegida por reserva
+ ✔ Cu11 inasistencia solo desde el minuto treinta
+ ✔ Cu13 derivacion completada al atender cita de destino
+ ✔ Cu16 totales separan monedas y excluyen el efectivo devuelto
+ ✔ Cu17 qbe filtra columnas exporta y maneja resultado vacio
+
+Chatbot Orientation (Tests\Feature\ChatbotOrientation)
+ ✔ Offers guided choices and uses the active catalog
+ ✔ Patient can follow the booking link from general orientation
+ ✔ Urgent language takes priority over a booking request
+
+Clinica (Tests\Feature\Clinica)
+ ✔ 01 registro atomico crea paciente perfil y cuenta
+ ✔ 02 ci duplicado rechazado sin registros parciales
+ ✔ 03 reserva valida mediante procedimiento
+ ✔ 04 colision no crea segunda cita
+ ✔ 05 rechaza fecha pasada fuera de turno y rango etario
+ ✔ 06 cancelacion libera bloque y conserva historial
+ ✔ 07 kardex incluye canceladas y aisla pacientes
+ ✔ 08 agenda solo muestra medico asignado
+ ✔ 09 todas las rutas internas exigen sesion
+ ✔ 10 validaciones obligatorias y horas invertidas
+ ✔ Login bloqueo progresivo y cuenta inactiva
+ ✔ Bloqueo duplica la duracion cada tres fallos hasta 16 horas
+ ✔ Recuperacion hash expiracion y token de un solo uso
+ ✔ Recuperacion en nube no genera un token si el correo solo va al log
+ ✔ Recuperacion usa brevo por https con el remitente configurado
+ ✔ Reprogramacion atomica y trazabilidad
+ ✔ Privacidad perfil chatbot y recetas
+ ✔ Alergia rechaza receta completa
+ ✔ Pago idempotente monto y comprobante
+ ✔ Webhook firma invalida y eventos duplicados
+ ✔ Contingencia traslada y notifica sin afirmar envio
+ ✔ Qbe parametrizado rechaza identificadores inyectados
+ ✔ Voz plan validado y aislamiento medico
+ ✔ Permisos revocados se aplican en sesion activa
+ ✔ Paginas principales y exportaciones renderizan
+
+Integridad Database (Tests\Feature\IntegridadDatabase)
+ ✔ Actualizacion repetida preserva la reserva y su moneda
+ ✔ Exclusion de citas protege incluso sin el validador plpgsql
+ ✔ Exclusion de turnos protege incluso sin el validador plpgsql
+
+Password Hashing (Tests\Feature\PasswordHashing)
+ ✔ New passwords use argon2id
+ ✔ Reset requires a strong password and accepts eight characters
+ ✔ Bcrypt login migrates hash and keeps authenticated session
+
+Reportes Acceso (Tests\Feature\ReportesAcceso)
+ ✔ Reporte por fecha incluye canceladas y respeta filtro y exportaciones
+ ✔ Administrador y recepcion consultan y exportan voz y medico solo sus citas
+ ✔ Revocar voz a recepcion bloquea consulta exportacion y pantalla
+
+Requisitos Funcionales (Tests\Feature\RequisitosFuncionales)
+ ✔ Paciente sin cuenta conserva correo y recibe avisos de reserva
+ ✔ Paciente actualiza contacto y solo medico asignado edita alergias
+ ✔ Caja cobra el arancel pactado y registra su devolucion
+ ✔ Limite de 30 minutos y recordatorio programado
+ ✔ Postgresql rechaza turnos solapados en el mismo consultorio
+ ✔ Catalogo impide variantes foneticas de especialidades existentes
+ ✔ Despacho respeta ventana y no repite recordatorio
+ ✔ Solicitud de devolucion stripe se procesa una vez
+ ✔ Checkout solicita solo tarjeta en la moneda de la reserva
+ ✔ Postgresql rechaza nuevos pagos con metodos retirados
+ ✔ Bitacora registra actor y diferencial y rechaza su edicion
+ ✔ Paciente afectado puede solicitar devolucion del traslado
+
+Voz Normalizacion (Tests\Unit\VozNormalizacion)
+ ✔ Normaliza estados y moneda sin modificar fechas
+ ✔ Normaliza plural y genero de estados sin permitir valores arbitrarios
+ ✔ Rechaza estados inventados por el modelo
+
+OK (67 tests, 442 assertions)

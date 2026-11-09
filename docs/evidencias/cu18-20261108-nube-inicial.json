@@ -1,0 +1,302 @@
+[
+    {
+        "prueba": "Público \/up",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Público \/login",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Público \/registro",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Público \/recuperar",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Anónimo requiere sesión",
+        "resultado": "APROBADA",
+        "http": 302
+    },
+    {
+        "prueba": "CU15 visitante no accede a citas personales",
+        "resultado": "FALLIDA",
+        "http": 419
+    },
+    {
+        "prueba": "CU01 acceso Administrador",
+        "resultado": "APROBADA"
+    },
+    {
+        "prueba": "Administrador \/admin",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Administrador \/admin\/usuarios",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Administrador \/admin\/roles",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Administrador \/admin\/bitacora",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Administrador \/admin\/especialidades",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Administrador \/admin\/medicos",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Administrador \/admin\/horarios",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Administrador \/admin\/pacientes",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Administrador \/admin\/contingencias",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Administrador \/admin\/qbe",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Administrador \/admin\/voz",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU16 reporte fecha",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU16 reporte medico",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU16 reporte especialidad",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU16 reporte estado",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU16 reporte pacientes",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU16 reporte consolidado",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU16 reporte agenda",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU16 descarga pdf",
+        "resultado": "APROBADA",
+        "http": 200,
+        "bytes": 878615
+    },
+    {
+        "prueba": "CU16 descarga xlsx",
+        "resultado": "APROBADA",
+        "http": 200,
+        "bytes": 6559
+    },
+    {
+        "prueba": "CU16 descarga csv",
+        "resultado": "APROBADA",
+        "http": 200,
+        "bytes": 264
+    },
+    {
+        "prueba": "CU17 QBE cita cancelada",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU17 descarga pdf",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU17 descarga xlsx",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU01 acceso Recepcionista",
+        "resultado": "APROBADA"
+    },
+    {
+        "prueba": "Recepcionista \/recepcion",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Recepcionista \/recepcion\/pacientes",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Recepcionista \/recepcion\/pacientes\/create",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Recepcionista \/recepcion\/citas",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Recepcionista \/recepcion\/citas\/nueva",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Recepcionista \/recepcion\/citas\/derivaciones",
+        "resultado": "FALLIDA",
+        "http": 302
+    },
+    {
+        "prueba": "Recepcionista \/recepcion\/agenda?fecha=2026-11-10",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Recepcionista \/recepcion\/contingencias",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Recepcionista \/recepcion\/reportes",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Recepcionista \/recepcion\/voz",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Recepcionista no administra usuarios",
+        "resultado": "APROBADA",
+        "http": 403
+    },
+    {
+        "prueba": "CU01 acceso Medico",
+        "resultado": "APROBADA"
+    },
+    {
+        "prueba": "Medico \/medico",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Medico \/medico\/agenda?fecha=2026-11-10",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Medico \/medico\/contingencias",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Medico \/medico\/voz",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Medico no administra usuarios",
+        "resultado": "APROBADA",
+        "http": 403
+    },
+    {
+        "prueba": "CU18 Gemini real y aislamiento médico",
+        "resultado": "APROBADA",
+        "http": 200,
+        "filas": 2
+    },
+    {
+        "prueba": "CU18 descarga pdf",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU18 descarga xlsx",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU01 acceso Paciente",
+        "resultado": "APROBADA"
+    },
+    {
+        "prueba": "Paciente \/paciente",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Paciente \/paciente\/citas",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Paciente \/paciente\/citas\/nueva",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Paciente no administra usuarios",
+        "resultado": "APROBADA",
+        "http": 403
+    },
+    {
+        "prueba": "CU10 perfil propio",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU15 paciente consulta cita activa",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "CU18 paciente sin acceso",
+        "resultado": "APROBADA",
+        "http": 403
+    }
+]

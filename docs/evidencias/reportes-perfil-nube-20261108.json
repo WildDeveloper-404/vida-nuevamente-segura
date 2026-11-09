@@ -1,0 +1,23 @@
+[
+    {
+        "prueba": "Reporte público CSV con 48 citas ficticias",
+        "http": 200,
+        "filas_demo": 48,
+        "aprobado": true
+    },
+    {
+        "prueba": "Receta en perfil de Lucía",
+        "http": 200,
+        "aprobado": true
+    },
+    {
+        "prueba": "Descarga PDF de receta desde nube",
+        "http": 200,
+        "bytes": 878659,
+        "aprobado": true
+    },
+    {
+        "prueba": "Formulario público con grabación compatible",
+        "aprobado": true
+    }
+]

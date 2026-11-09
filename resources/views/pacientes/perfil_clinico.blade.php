@@ -38,4 +38,33 @@
         </dl>
     @endif
 </div></div>
+<section class="card mt-4" aria-labelledby="recetas-titulo">
+    <div class="card-body">
+        <h2 id="recetas-titulo">Recetas médicas</h2>
+        @forelse($recetas as $receta)
+            <article class="border rounded p-3 mb-3">
+                <h3 class="h5">Receta #{{ $receta->id_receta }}</h3>
+                <p>{{ $receta->fecha_emision }} · {{ $receta->cita->medico->persona->nombre_completo }} · {{ $receta->cita->especialidad->nombre }}</p>
+                <p><strong>Diagnóstico ({{ $receta->cie10 }}):</strong> {{ $receta->diagnostico }}</p>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead><tr><th>Medicamento / examen</th><th>Dosis</th><th>Frecuencia</th><th>Duración</th></tr></thead>
+                        <tbody>
+                        @foreach($receta->detalles as $detalle)
+                            <tr>
+                                <td>{{ $detalle->medicamento_o_examen }} @if($detalle->principio_activo)<br><small>{{ $detalle->principio_activo }}</small>@endif</td>
+                                <td>{{ $detalle->dosis ?: '—' }}</td><td>{{ $detalle->frecuencia ?: '—' }}</td><td>{{ $detalle->duracion ?: '—' }}</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <a class="btn btn-outline-primary" href="{{ route('recetas.pdf',$receta->id_receta) }}">Descargar receta PDF</a>
+            </article>
+        @empty
+            <p>Todavía no hay recetas emitidas para mostrar.</p>
+        @endforelse
+        {{ $recetas->links() }}
+    </div>
+</section>
 @endsection

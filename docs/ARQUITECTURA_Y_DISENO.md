@@ -16,8 +16,8 @@ La implementación distingue cuatro actores: **Administrador**, **Recepcionista*
 | Persistencia | PostgreSQL mediante PDO | Datos transaccionales, restricciones, índices, funciones, procedimientos y disparadores. |
 | Acceso a datos | Eloquent y constructor de consultas de Laravel; SQL parametrizado donde se invocan rutinas PostgreSQL | Mapear tablas y relaciones, recuperar datos y ejecutar operaciones. |
 | Interfaz | Blade, Bootstrap 5, Bootstrap Icons, CSS y JavaScript | Pantallas adaptables, formularios y consultas asíncronas. |
-| Documentos | Dompdf, Endroid QR Code y PhpSpreadsheet | Comprobantes y recetas en PDF, QR de verificación e informes Excel. |
-| Integraciones externas | Stripe Checkout, SMTP y Gemini | Pago en línea, avisos por correo y planificación de informes por voz. |
+| Documentos | Dompdf, Endroid QR Code y PhpSpreadsheet | Comprobantes y recetas en PDF, e informes Excel. La verificación histórica permanece disponible. |
+| Integraciones externas | Stripe Checkout, Brevo por HTTPS y Gemini | Pago en línea, avisos por correo y planificación de informes por voz. |
 | Pruebas | PHPUnit y una prueba de dos procesos PHP | Verificar flujos, seguridad, reglas de negocio y concurrencia. |
 
 Se eligió Laravel 12 conservando la arquitectura PHP/Blade/PostgreSQL prevista. El sistema es una **aplicación web monolítica modular**: la interfaz, los controladores, las reglas de aplicación y el acceso a datos están en un mismo proyecto y despliegue. No se implementaron microservicios ni una API pública independiente.
@@ -31,7 +31,7 @@ La solución usa el patrón MVC de Laravel, complementado con servicios para ope
 3. **Servicios de aplicación.** `CitaService`, `PagoService`, `ReporteService`, `ExportService` y `VozService` coordinan flujos que requieren transacciones, validaciones o integración externa.
 4. **Modelo y persistencia.** Los modelos Eloquent representan las 24 tablas. Las consultas de Laravel y las llamadas SQL parametrizadas comunican PHP con PostgreSQL.
 5. **Reglas de base de datos.** Claves foráneas, restricciones `CHECK`, índices, funciones, procedimientos y triggers protegen la integridad aun cuando se accede a la base por más de una operación de aplicación.
-6. **Servicios externos.** Stripe, correo SMTP y Gemini se invocan desde flujos específicos, mediante credenciales de entorno. El resto del sistema no depende de que esas credenciales existan para iniciar.
+6. **Servicios externos.** Stripe, Brevo y Gemini se invocan desde flujos específicos, mediante credenciales de entorno. El resto del sistema no depende de que esas credenciales existan para iniciar.
 
 ```mermaid
 flowchart LR
@@ -44,7 +44,7 @@ flowchart LR
     S --> P[Funciones y procedimientos PostgreSQL]
     M --> P
     P --> D[(Tablas, índices y triggers)]
-    S --> E[Stripe / SMTP / Gemini]
+    S --> E[Stripe / Brevo / Gemini]
 ```
 
 ### 3.1 Distribución física del código

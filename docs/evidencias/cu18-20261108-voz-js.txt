@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: el error de red permanece visible al terminar y permite reintentar
+ok 1 - el error de red permanece visible al terminar y permite reintentar
+  ---
+  duration_ms: 5.4807
+  type: 'test'
+  ...
+# Subtest: distingue permiso bloqueado de ausencia de micrófono
+ok 2 - distingue permiso bloqueado de ausencia de micrófono
+  ---
+  duration_ms: 2.6013
+  type: 'test'
+  ...
+# Subtest: impide dos inicios mientras espera el reconocimiento
+ok 3 - impide dos inicios mientras espera el reconocimiento
+  ---
+  duration_ms: 4.1318
+  type: 'test'
+  ...
+# Subtest: captura el texto y restablece el botón al terminar
+ok 4 - captura el texto y restablece el botón al terminar
+  ---
+  duration_ms: 1.6849
+  type: 'test'
+  ...
+# Subtest: sin voz no borra la consulta que ya estaba escrita
+ok 5 - sin voz no borra la consulta que ya estaba escrita
+  ---
+  duration_ms: 1.2264
+  type: 'test'
+  ...
+# Subtest: explica la falta de contexto seguro o de soporte del navegador
+ok 6 - explica la falta de contexto seguro o de soporte del navegador
+  ---
+  duration_ms: 2.5342
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 57.7237

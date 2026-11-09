@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use App\Support\PasswordPolicy;
 use App\Models\{Medico,Persona,Usuario,Especialidad,Rol,CitaMedica};
 use App\Support\Audit;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class MedicoController extends Controller
     private function save(Request $r,?Medico $m)
     {
         $r->merge(['correo'=>mb_strtolower(trim((string)$r->correo))]);
-        $d=$r->validate(['ci'=>['required','string','max:20',Rule::unique('persona','ci')->ignore($m?->id_medico,'id_persona')],'nombres'=>'required|string|max:80','apellidos'=>'required|string|max:100','telefono'=>'required|string|max:20','correo'=>['required','email','max:120',Rule::unique('usuario','correo')->ignore($m?->persona->usuario?->id_usuario,'id_usuario')],'nro_matricula'=>['required','string','max:50',Rule::unique('medico','nro_matricula')->ignore($m?->id_medico,'id_medico')],'password'=>($m?'nullable':'required').'|string|min:10|max:128|confirmed','especialidades'=>'required|array|min:1','especialidades.*'=>['integer',Rule::exists('especialidad','id_especialidad')->where('estado','Activo')]]);
+        $d=$r->validate(['ci'=>['required','string','max:20',Rule::unique('persona','ci')->ignore($m?->id_medico,'id_persona')],'nombres'=>'required|string|max:80','apellidos'=>'required|string|max:100','telefono'=>'required|string|max:20','correo'=>['required','email','max:120',Rule::unique('usuario','correo')->ignore($m?->persona->usuario?->id_usuario,'id_usuario')],'nro_matricula'=>['required','string','max:50',Rule::unique('medico','nro_matricula')->ignore($m?->id_medico,'id_medico')],'password'=>PasswordPolicy::rules(!$m),'especialidades'=>'required|array|min:1','especialidades.*'=>['integer',Rule::exists('especialidad','id_especialidad')->where('estado','Activo')]]);
         DB::transaction(function() use($d,$m) {
             $p=$m?->persona??new Persona; $p->fill(collect($d)->only(['ci','nombres','apellidos','telefono'])->all())->save();
             if(!$m) $m=new Medico(['id_medico'=>$p->id_persona,'codigo_medico'=>DB::selectOne("SELECT 'MED-' || lpad(nextval('seq_codigo_medico')::text,4,'0') AS codigo")->codigo]);

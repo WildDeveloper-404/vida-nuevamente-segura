@@ -1,6 +1,6 @@
 <?php
 namespace App\Http\Controllers;
-use App\Models\{Paciente,PerfilClinico};
+use App\Models\{Paciente,PerfilClinico,RecetaMedica};
 use App\Support\{Access,Audit};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -9,7 +9,12 @@ class PerfilClinicoController extends Controller
     public function show(int $paciente)
     {
         Access::perfil($paciente);
-        return view('pacientes.perfil_clinico',['paciente'=>Paciente::with('persona','perfilClinico')->findOrFail($paciente)]);
+        $recetas=RecetaMedica::with(['detalles','cita.medico.persona','cita.especialidad'])
+            ->whereHas('cita',function($q) use($paciente) {
+                $q->where('id_paciente',$paciente);
+                if(session('rol')==='Medico') $q->where('id_medico',session('id_persona'));
+            })->orderByDesc('fecha_emision')->orderByDesc('id_receta')->paginate(10, ['*'], 'recetas');
+        return view('pacientes.perfil_clinico',['paciente'=>Paciente::with('persona','perfilClinico')->findOrFail($paciente),'recetas'=>$recetas]);
     }
     public function update(Request $r,int $paciente)
     {

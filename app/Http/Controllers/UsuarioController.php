@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use App\Support\PasswordPolicy;
 use App\Models\{Usuario,Persona,Rol,PersonalAdministrativo,Paciente,Medico};
 use App\Support\Audit;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class UsuarioController extends Controller
     private function save(Request $r,?Usuario $u)
     {
         $r->merge(['correo'=>mb_strtolower(trim((string)$r->correo))]);
-        $d=$r->validate(['ci'=>['required','string','max:20',Rule::unique('persona','ci')->ignore($u?->id_persona,'id_persona')],'nombres'=>'required|string|max:80','apellidos'=>'required|string|max:100','telefono'=>'required|string|max:20','direccion'=>'nullable|string|max:200','correo'=>['required','email','max:120',Rule::unique('usuario','correo')->ignore($u?->id_usuario,'id_usuario')],'password'=>($u?'nullable':'required').'|string|min:10|max:128|confirmed','id_rol'=>'required|integer|exists:rol,id_rol','cargo'=>'nullable|string|max:60','estado'=>'required|in:Activo,Inactivo']);
+        $d=$r->validate(['ci'=>['required','string','max:20',Rule::unique('persona','ci')->ignore($u?->id_persona,'id_persona')],'nombres'=>'required|string|max:80','apellidos'=>'required|string|max:100','telefono'=>'required|string|max:20','direccion'=>'nullable|string|max:200','correo'=>['required','email','max:120',Rule::unique('usuario','correo')->ignore($u?->id_usuario,'id_usuario')],'password'=>PasswordPolicy::rules(!$u),'id_rol'=>'required|integer|exists:rol,id_rol','cargo'=>'nullable|string|max:60','estado'=>'required|in:Activo,Inactivo']);
         DB::transaction(function() use($d,$u) {
             $role=Rol::findOrFail($d['id_rol'])->nombre_rol;
             if(!$u && !in_array($role,['Administrador','Recepcionista'])) throw ValidationException::withMessages(['id_rol'=>'Registre mÃ©dicos desde MÃ©dicos y pacientes desde Pacientes para crear su ficha y cuenta.']);

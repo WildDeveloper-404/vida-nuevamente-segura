@@ -179,3 +179,103 @@ La verificación posterior en Supabase confirmó Argon2id en su `password_hash` 
 cero cuentas pendientes de migración. El esquema de la demo tiene 25 tablas con
 RLS activo y ocho especialidades. Las integraciones externas y el programador
 de tareas todavía requieren la validación desde el entorno de nube.
+
+## Acceso y perfiles de presentación en nube — 8 de noviembre de 2026
+
+Se publicó manualmente en Railway el despliegue 5b9159b9-35e1-4bbd-8d7c-1311fda411d5, preparado desde la rama despliegue-supabase con los cambios de política de contraseña del espacio de trabajo. Estos cambios siguen pendientes de commit y publicación en GitHub.
+
+Las altas, ediciones de contraseña y restablecimientos exigen ocho caracteres, minúscula, mayúscula, número y un carácter de puntuación o símbolo. Los formularios muestran la misma regla y el acceso conserva la compatibilidad con hashes existentes. La suite local aprobó 59 pruebas y 369 aserciones. La web pública respondió HTTP 200 en el formulario de restablecimiento y rechazó una contraseña débil con HTTP 422.
+
+La cuenta de administrador autorizada se verificó con su nueva contraseña y Argon2id en Supabase. Se crearon tres cuentas ficticias para Recepcionista, Médico y Paciente, con ficha y perfil clínico para el paciente, un médico de Medicina General, un consultorio, siete turnos semanales y dos citas de demostración para el 10 de noviembre de 2026. Una cita está Programada y otra Cancelada. Los cuatro perfiles abrieron sus respectivos paneles públicos con HTTP 200. Las credenciales de demostración están en el archivo local Accesos_presentacion_VNS.txt de Descargas.
+
+Brevo confirmó una clave API válida y un remitente activo. Se habilitó MAIL_MAILER=brevo en Railway. La recuperación conserva el enlace de un solo uso con token aleatorio de 64 caracteres, huella SHA-256 en la base y vigencia de 30 minutos. Se solicitó la recuperación desde el formulario público de Railway y se verificó un token nuevo en Supabase. Brevo registró el evento delivered para el correo de recuperación.
+
+Los avisos de las citas ficticias dirigidos a example.test quedaron anulados para impedir su despacho. El programador de tareas y el ensayo de cobro completo sobre Railway siguen pendientes del cierre de la presentación.
+
+## Pruebas CU01–CU18 — 8 de noviembre de 2026
+
+Se ejecutó la suite sobre PostgreSQL local en la base aislada
+`clinica_documentacion_20261108_test`, con PHP 8.3.36 y PHPUnit 11.5.57:
+**67 pruebas y 442 aserciones, sin fallos, errores ni pruebas omitidas**.
+La ejecución inicial tenía 59 pruebas; se agregaron ocho pruebas de aceptación
+para permisos por HTTP, filtros de bitácora y Excel, edición de especialidad,
+turnos con reservas, inasistencia a los 30 minutos, cierre de derivación,
+totales separados por moneda y QBE con exportación y resultado vacío.
+
+La reserva concurrente en dos procesos aprobó: una creada, una rechazada y una
+sola cita persistida. Las seis pruebas JavaScript de la captura de voz también
+aprobaron. La compilación de vistas Blade y `git diff --check` no dieron errores.
+
+Sobre el dominio público de Railway se comprobaron los cuatro accesos, las
+pantallas de cada perfil, restricciones entre roles, los siete reportes y sus
+descargas, QBE y privacidad de Angélica. Gemini real generó un reporte médico
+con las dos citas del profesional ficticio; PDF y Excel descargaron correctamente.
+El resultado final de las sondas es **60 comprobaciones aprobadas**. Dos entradas
+de la sonda inicial se corrigieron y repitieron: token CSRF renovado tras
+invalidación de sesión anónima e inclusión de `id_paciente` en la consulta de
+derivaciones. Se conserva evidencia inicial y de repetición.
+
+La [matriz de pruebas CU01–CU18](PRUEBAS_CU01_CU18.md) detalla escenarios,
+entornos, archivos de pruebas y límites de la validación. Las evidencias están
+en `docs/evidencias/cu18-20261108-*` y no contienen credenciales.
+
+No se ejecutó la suite de escritura sobre Supabase. El cobro completo de Stripe
+Test y su devolución en Railway, la observación de un recordatorio automático,
+la captura física de voz y el escaneo físico de QR siguen pendientes de ensayo.
+Las diferencias de alcance del documento original permanecen en
+`AUDITORIA_CASOS_DE_USO.md`; aprobar los recorridos implementados no las resuelve.
+Se mantuvo la rama `despliegue-supabase`, sin commit, push ni nuevo despliegue.
+
+### CU12: receta en el perfil, sin escaneo
+
+Por solicitud del usuario se retiró el escaneo de receta de los pendientes de
+aceptación y el QR del PDF. El perfil clínico ahora lista recetas con fecha,
+médico, especialidad, diagnóstico, medicamentos/exámenes, dosis, frecuencia,
+duración y descarga PDF. El paciente ve sus recetas; el médico únicamente las
+emitidas en sus atenciones. Se mantienen las comprobaciones de integridad y
+el verificador legado para compatibilidad con documentos anteriores.
+
+La suite posterior aprobó **69 pruebas y 461 aserciones**, incluidas dos pruebas
+nuevas del perfil, privacidad entre pacientes y médicos, PDF sin QR y estado
+sin recetas. Evidencia: `docs/evidencias/recetas-perfil-20261108.xml`.
+Blade compiló correctamente. Cambios locales en `despliegue-supabase`, pendientes
+de commit y despliegue; todavía no están publicados en Railway.
+
+### Despliegue de recetas en perfil y comprobación pública
+
+Se publicó por autorización del usuario el despliegue Railway
+`9d709dc8-0774-4468-a4e5-f1d3da34ce31`, con estado `SUCCESS`, sobre el servicio
+existente en `production`. Se preparó una copia de Git con los archivos de
+aplicación modificados, sin incluir archivos de entorno, credenciales ni datos
+locales ajenos al cambio. No se hizo commit ni push. El conector de Railway
+denegó acceso al proyecto; se utilizó la terminal previamente autenticada.
+
+El proceso arrancó con PHP 8.5.12; `/up` devolvió HTTP 200 y los cuatro perfiles
+abrieron sus paneles públicos con HTTP 200. Desde Edge se inició sesión como
+paciente ficticio y se abrió `/paciente/perfil`, que redirigió a su perfil propio.
+La interfaz accesible muestra la nueva sección «Recetas médicas» y el mensaje
+«Todavía no hay recetas emitidas para mostrar», coherente con los datos de Lucía.
+No se guardó la contraseña en el navegador ni se modificaron citas o recetas
+de Supabase para esta revisión.
+
+La captura gráfica de la ventana agotó el tiempo de espera; la navegación y la
+verificación se realizaron con teclado y árbol de accesibilidad. No se declara
+aprobación visual completa. La descarga de una receta con contenido desde nube
+requiere emitir una receta sobre una atención ficticia completada. La generación
+y la privacidad con contenido ya aprobaron las pruebas locales anteriores.
+
+### Ensayo de cierre en Railway
+
+El despliegue `faa4ec21-6a78-4184-9b93-f5f3df085237` inició Apache y el
+programador de Laravel en producción. Los logs muestran las ejecuciones
+automáticas de avisos y devoluciones. El recordatorio de demostración de la
+cita CM-0001 quedó registrado como Enviado y Brevo confirmó una entrega.
+
+En la cita ficticia CM-0003, Stripe Test confirmó Checkout completo por 100 BOB.
+El sistema registró un solo pago y el comprobante REC-01-00000025 se descargó
+como PDF con HTTP 200. Se canceló la cita de prueba y el programador procesó la
+devolución. Stripe confirmó `succeeded` y la aplicación registró `Devuelto`.
+
+La regresión local aprobó 73 pruebas PHP, 487 aserciones y 10 pruebas JavaScript.
+El usuario confirmó que la consulta dictada produjo la transcripción y el
+reporte esperado en Edge y Brave.

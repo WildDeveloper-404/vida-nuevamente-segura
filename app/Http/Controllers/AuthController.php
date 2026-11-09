@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use App\Support\PasswordPolicy;
 use App\Models\Usuario;
 use App\Support\Audit;
 use Illuminate\Http\Request;
@@ -65,7 +66,7 @@ class AuthController extends Controller
     public function reset(string $token) { return view('auth.reset',compact('token')); }
     public function cambiarPasswordConToken(Request $r)
     {
-        $d=$r->validate(['correo'=>'required|email','token'=>'required|string|size:64','password'=>'required|string|min:10|max:128|confirmed']);
+        $d=$r->validate(['correo'=>'required|email','token'=>'required|string|size:64','password'=>PasswordPolicy::rules(true)]);
         DB::transaction(function() use($d) {
             $u=Usuario::whereRaw('lower(correo) = ?', [mb_strtolower($d['correo'])])->lockForUpdate()->first();
             if(!$u || !$u->token_recuperacion || !hash_equals($u->token_recuperacion,hash('sha256',$d['token'])) || !$u->token_expiracion || $u->token_expiracion->isPast() || $u->estado!=='Activo') {

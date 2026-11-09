@@ -1,0 +1,12 @@
+[
+    {
+        "prueba": "CU15 visitante no accede a citas personales",
+        "resultado": "APROBADA",
+        "http": 200
+    },
+    {
+        "prueba": "Recepcionista \/recepcion\/citas\/derivaciones",
+        "resultado": "APROBADA",
+        "http": 200
+    }
+]

@@ -70,3 +70,56 @@ test('explica la falta de contexto seguro o de soporte del navegador',()=>{
     const unsupported=page({supported:false});assert.equal(unsupported.mic.disabled,true);
     assert.match(unsupported.status.textContent,/no ofrece reconocimiento/);
 });
+
+function recordedPage({denied=false,ok=true}={}) {
+    let recorder,timer,stopped=0,sent;
+    const elements=Object.fromEntries(['voice-form','voice-text','voice-mic','voice-status','voice-result','voice-mic-label'].map(id=>[id,{
+        value:'Texto previo',dataset:{},textContent:'',disabled:false,classList:{add(){},remove(){}},setAttribute(name,value){this[name]=value},
+    }]));
+    elements['voice-form'].dataset.transcriptionUrl='/reportes/voz/transcribir';
+    class Recorder {
+        static isTypeSupported(type){return type==='audio/mp4'}
+        constructor(stream,options){recorder=this;this.mimeType=options.mimeType;this.state='inactive'}
+        start(){this.state='recording'}
+        stop(){this.state='inactive';this.ondataavailable({data:new Blob(['audio ficticio'])});this.done=this.onstop()}
+    }
+    runInNewContext(source,{
+        window:{isSecureContext:true,MediaRecorder:Recorder,navigator:{mediaDevices:{getUserMedia:async()=>{
+            if(denied)throw Object.assign(new Error('denegado'),{name:'NotAllowedError'});
+            return {getTracks:()=>[{stop(){stopped++}}]};
+        }}},addEventListener(){}},Blob,FormData,
+        setTimeout(callback,delay){assert.equal(delay,30000);timer=callback;return 1},clearTimeout(){},
+        fetch:async(url,options)=>{sent={url,options};return {ok,json:async()=>ok?{texto:'Citas atendidas de este mes'}:{errors:{audio:['No se detectó voz clara.']}}}},
+        document:{getElementById:id=>elements[id],querySelector:()=>({content:'csrf-ficticio'})},
+    });
+    return {elements,mic:elements['voice-mic'],input:elements['voice-text'],status:elements['voice-status'],
+        recorder:()=>recorder,timer:()=>timer(),stopped:()=>stopped,sent:()=>sent};
+}
+
+test('graba sin SpeechRecognition, negocia MP4 y transcribe antes de consultar',async()=>{
+    const p=recordedPage();await p.mic.onclick();assert.equal(p.recorder().mimeType,'audio/mp4');
+    assert.equal(p.elements['voice-mic-label'].textContent,'Detener');
+    await p.mic.onclick();await p.recorder().done;
+    assert.equal(p.input.value,'Citas atendidas de este mes');assert.match(p.status.textContent,/Revise su consulta/);
+    assert.equal(p.stopped(),1);assert.equal(p.mic.disabled,false);
+    assert.equal(p.sent().url,'/reportes/voz/transcribir');
+    assert.equal(p.sent().options.headers['X-CSRF-TOKEN'],'csrf-ficticio');
+    assert.equal(p.sent().options.body.get('audio').type,'audio/mp4');
+});
+
+test('permiso denegado en grabación conserva el texto y permite reintentar',async()=>{
+    const p=recordedPage({denied:true});await p.mic.onclick();
+    assert.match(p.status.textContent,/permiso del micrófono/);assert.equal(p.input.value,'Texto previo');assert.equal(p.mic.disabled,false);
+    assert.equal(p.sent(),undefined);
+});
+
+test('fallo de transcripción conserva el texto y libera el micrófono',async()=>{
+    const p=recordedPage({ok:false});await p.mic.onclick();await p.mic.onclick();await p.recorder().done;
+    assert.equal(p.input.value,'Texto previo');assert.match(p.status.textContent,/No se detectó voz/);
+    assert.equal(p.stopped(),1);assert.equal(p.mic.disabled,false);
+});
+
+test('detiene automáticamente la grabación al cumplir treinta segundos',async()=>{
+    const p=recordedPage();await p.mic.onclick();p.timer();await p.recorder().done;
+    assert.equal(p.recorder().state,'inactive');assert.equal(p.stopped(),1);
+});

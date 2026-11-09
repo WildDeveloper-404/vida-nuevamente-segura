@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: el error de red permanece visible al terminar y permite reintentar
+ok 1 - el error de red permanece visible al terminar y permite reintentar
+  ---
+  duration_ms: 7.758
+  type: 'test'
+  ...
+# Subtest: distingue permiso bloqueado de ausencia de micrófono
+ok 2 - distingue permiso bloqueado de ausencia de micrófono
+  ---
+  duration_ms: 2.9908
+  type: 'test'
+  ...
+# Subtest: impide dos inicios mientras espera el reconocimiento
+ok 3 - impide dos inicios mientras espera el reconocimiento
+  ---
+  duration_ms: 2.0088
+  type: 'test'
+  ...
+# Subtest: captura el texto y restablece el botón al terminar
+ok 4 - captura el texto y restablece el botón al terminar
+  ---
+  duration_ms: 1.9631
+  type: 'test'
+  ...
+# Subtest: sin voz no borra la consulta que ya estaba escrita
+ok 5 - sin voz no borra la consulta que ya estaba escrita
+  ---
+  duration_ms: 2.0629
+  type: 'test'
+  ...
+# Subtest: explica la falta de contexto seguro o de soporte del navegador
+ok 6 - explica la falta de contexto seguro o de soporte del navegador
+  ---
+  duration_ms: 3.767
+  type: 'test'
+  ...
+# Subtest: graba sin SpeechRecognition, negocia MP4 y transcribe antes de consultar
+ok 7 - graba sin SpeechRecognition, negocia MP4 y transcribe antes de consultar
+  ---
+  duration_ms: 60.934
+  type: 'test'
+  ...
+# Subtest: permiso denegado en grabación conserva el texto y permite reintentar
+ok 8 - permiso denegado en grabación conserva el texto y permite reintentar
+  ---
+  duration_ms: 2.1671
+  type: 'test'
+  ...
+# Subtest: fallo de transcripción conserva el texto y libera el micrófono
+ok 9 - fallo de transcripción conserva el texto y libera el micrófono
+  ---
+  duration_ms: 3.6065
+  type: 'test'
+  ...
+# Subtest: detiene automáticamente la grabación al cumplir treinta segundos
+ok 10 - detiene automáticamente la grabación al cumplir treinta segundos
+  ---
+  duration_ms: 3.0403
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 134.4381

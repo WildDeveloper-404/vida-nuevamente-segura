@@ -89,4 +89,5 @@ Route::middleware(['rol:Recepcionista,Paciente','permiso:pagos'])->group(functio
     Route::post('/comprobantes/{pago}/devolucion',[PagoController::class,'confirmarDevolucion'])->name('pagos.devolucion');
 });
 Route::post('/reportes/voz',[VozReporteController::class,'procesarVoz'])->middleware(['rol:Administrador,Recepcionista,Medico','permiso:voz','throttle:10,1'])->name('voz.procesar');
+Route::post('/reportes/voz/transcribir',[VozReporteController::class,'transcribir'])->middleware(['rol:Administrador,Recepcionista,Medico','permiso:voz','throttle:6,1'])->name('voz.transcribir');
 Route::get('/reportes/voz/exportar',[VozReporteController::class,'export'])->middleware(['rol:Administrador,Recepcionista,Medico','permiso:voz'])->name('voz.export');

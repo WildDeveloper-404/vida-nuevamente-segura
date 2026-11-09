@@ -8,6 +8,11 @@ use Illuminate\Validation\Rule;
 class VozReporteController extends Controller
 {
     public function index() { return view('admin.reportes.voz'); }
+    public function transcribir(Request $r,\App\Services\AudioTranscripcionService $service)
+    {
+        $r->validate(['audio'=>'required|file|max:6144']);
+        return response()->json(['texto'=>$service->transcribir($r->file('audio'))]);
+    }
     public function procesarVoz(Request $r,VozService $voice,ReporteService $reports)
     {
         $d=$r->validate(['texto'=>'required|string|max:500']);$plan=$voice->plan($d['texto']);$doctor=session('rol')==='Medico'?(int)session('id_persona'):null;

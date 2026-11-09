@@ -12,7 +12,45 @@
         'language-not-supported':'El servicio no admite el idioma español configurado. Pruebe esta página en otro navegador con reconocimiento de voz.',
         'aborted':'La captura de voz se interrumpió. Puede pulsar Hablar para intentarlo de nuevo.',
     };
-    if(!window.isSecureContext){
+    const canRecord=!!(window.MediaRecorder && window.navigator?.mediaDevices?.getUserMedia && form.dataset.transcriptionUrl);
+    if(window.isSecureContext && canRecord){
+        let busy=false,recorder=null,stream=null,timer=null,chunks=[],failed=false;
+        const stopTracks=()=>{if(stream)stream.getTracks().forEach(track=>track.stop());stream=null};
+        const reset=()=>{clearTimeout(timer);stopTracks();recorder=null;busy=false;mic.disabled=false;mic.classList.remove('mic-listening');mic.setAttribute('aria-pressed','false');if(micLabel)micLabel.textContent='Hablar'};
+        const fail=error=>{status.textContent=error?.name==='NotAllowedError'?voiceErrors['not-allowed']:error?.name==='NotFoundError'?voiceErrors['audio-capture']:(error?.message||'No se pudo grabar el audio. Puede escribir su consulta.');reset()};
+        mic.onclick=async()=>{
+            if(recorder?.state==='recording'){recorder.stop();return}
+            if(busy)return;
+            busy=true;mic.disabled=true;status.textContent='Solicitando acceso al micrófono…';
+            try{
+                stream=await window.navigator.mediaDevices.getUserMedia({audio:true});
+                const mime=['audio/webm;codecs=opus','audio/ogg;codecs=opus','audio/mp4'].find(type=>window.MediaRecorder.isTypeSupported(type));
+                recorder=new window.MediaRecorder(stream,mime?{mimeType:mime}:undefined);chunks=[];failed=false;
+                recorder.ondataavailable=event=>{if(event.data.size)chunks.push(event.data)};
+                recorder.onerror=()=>{failed=true;fail(new Error('No se pudo grabar el audio. Intente de nuevo.'))};
+                recorder.onstop=async()=>{
+                    if(failed)return;
+                    clearTimeout(timer);stopTracks();mic.disabled=true;mic.classList.remove('mic-listening');mic.setAttribute('aria-pressed','false');
+                    if(micLabel)micLabel.textContent='Transcribiendo…';status.textContent='Transcribiendo su consulta…';
+                    try{
+                        const audio=new Blob(chunks,{type:recorder.mimeType||mime||'audio/webm'});
+                        if(!audio.size)throw Error('No se capturó audio. Vuelva a grabar.');
+                        if(audio.size>6*1024*1024)throw Error('El audio es demasiado grande. Grabe una frase más corta.');
+                        const data=new FormData();data.append('audio',audio,'consulta.'+(audio.type.includes('mp4')?'mp4':audio.type.includes('ogg')?'ogg':'webm'));
+                        const response=await fetch(form.dataset.transcriptionUrl,{method:'POST',headers:{Accept:'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},body:data});
+                        const result=await response.json();
+                        if(!response.ok)throw Error(Object.values(result.errors||{}).flat().join(' ')||result.message||'No se pudo transcribir el audio.');
+                        if(typeof result.texto!=='string'||!result.texto.trim())throw Error('No se detectó voz clara. Vuelva a grabar.');
+                        input.value=result.texto;status.textContent='Voz capturada. Revise su consulta y pulse Consultar.';
+                    }catch(error){status.textContent=error.message||'No se pudo transcribir el audio. Puede escribir su consulta.'}
+                    finally{chunks=[];reset()}
+                };
+                recorder.start();mic.disabled=false;mic.classList.add('mic-listening');mic.setAttribute('aria-pressed','true');if(micLabel)micLabel.textContent='Detener';status.textContent='Grabando… Pulse Detener cuando termine (máximo 30 segundos).';
+                timer=setTimeout(()=>{if(recorder?.state==='recording')recorder.stop()},30000);
+            }catch(error){fail(error)}
+        };
+        window.addEventListener('pagehide',()=>{failed=true;clearTimeout(timer);if(recorder?.state==='recording')recorder.stop();stopTracks()});
+    }else if(!window.isSecureContext){
         mic.disabled=true;status.textContent='Para usar el micrófono, abra la aplicación mediante HTTPS o desde http://127.0.0.1:8000 en este equipo.';
     }else if(Speech){
         const recognition=new Speech();

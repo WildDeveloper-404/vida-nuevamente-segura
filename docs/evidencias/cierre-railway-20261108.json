@@ -1,0 +1,37 @@
+{
+  "fecha_local": "2026-11-08",
+  "despliegue": "faa4ec21-6a78-4184-9b93-f5f3df085237",
+  "stripe_test": {
+    "cita": "CM-0003",
+    "checkout": "complete",
+    "pago": "succeeded",
+    "importe": 100,
+    "moneda": "BOB",
+    "pagos_registrados": 1,
+    "comprobante": "REC-01-00000025",
+    "comprobante_http": 200,
+    "comprobante_es_pdf": true,
+    "estado_cita": "Cancelada",
+    "devolucion_app": "Devuelto",
+    "devolucion_stripe": "succeeded"
+  },
+  "programador": {
+    "ejecucion": "Automática en Railway",
+    "cita": "CM-0001",
+    "tipo": "Recordatorio",
+    "estado_app": "Enviado",
+    "entregas_brevo": 1,
+    "mensajes_distintos": 1
+  },
+  "captura_fisica": {
+    "confirmada_por": "Usuario",
+    "consulta": "Mostrar citas canceladas de este mes",
+    "edge": "Transcripción y reporte correctos",
+    "brave": "Transcripción y reporte correctos"
+  },
+  "regresion": {
+    "php": 73,
+    "aserciones": 487,
+    "javascript": 10
+  }
+}

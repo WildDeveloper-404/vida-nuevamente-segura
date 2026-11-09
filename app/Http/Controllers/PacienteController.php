@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers;
+use App\Support\PasswordPolicy;
 use App\Models\{Paciente,Persona,Usuario};
 use App\Support\Audit;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class PacienteController extends Controller
         if ($public || $r->filled('password')) {
             $emailRules[] = Rule::unique('usuario','correo');
         }
-        $d=$r->validate(['ci'=>'required|string|max:20|unique:persona,ci','nombres'=>'required|string|max:80','apellidos'=>'required|string|max:100','telefono'=>'required|string|max:20','direccion'=>'nullable|string|max:200','sexo'=>'required|in:M,F,O','fecha_nacimiento'=>'required|date|before_or_equal:today','correo'=>$emailRules,'password'=>($public?'required':'nullable').'|string|min:10|max:128|confirmed']);
+        $d=$r->validate(['ci'=>'required|string|max:20|unique:persona,ci','nombres'=>'required|string|max:80','apellidos'=>'required|string|max:100','telefono'=>'required|string|max:20','direccion'=>'nullable|string|max:200','sexo'=>'required|in:M,F,O','fecha_nacimiento'=>'required|date|before_or_equal:today','correo'=>$emailRules,'password'=>PasswordPolicy::rules($public)]);
         DB::transaction(fn()=>DB::select('CALL sp_registrar_paciente_completo(?::varchar, ?::varchar, ?::varchar, ?::char, ?::date, ?::varchar, ?::varchar, ?::varchar, ?::varchar, ?::varchar, NULL, NULL)',[$d['ci'],$d['nombres'],$d['apellidos'],$d['sexo'],$d['fecha_nacimiento'],$d['telefono'],isset($d['correo'])?mb_strtolower($d['correo']):null,$d['direccion']??null,!empty($d['password'])?Hash::make($d['password']):null,null]));
         $destination = $public ? 'login' : ($r->routeIs('admin.*') ? 'admin.pacientes.index' : 'recepcion.pacientes.index');
         return redirect()->route($destination)->with('success','Paciente registrado correctamente.');

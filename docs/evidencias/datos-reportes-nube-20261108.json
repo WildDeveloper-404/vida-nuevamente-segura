@@ -1,0 +1,15 @@
+{
+    "pacientes_simulados": 18,
+    "medicos_en_reportes": 4,
+    "citas": 48,
+    "estados": {
+        "Atendida": 16,
+        "Cancelada": 12,
+        "Confirmada": 8,
+        "Inasistencia": 4,
+        "Programada": 8
+    },
+    "recetas": 16,
+    "pagos_simulados": 24,
+    "fecha_local": "2026-11-08"
+}

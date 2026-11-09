@@ -2,6 +2,12 @@
 use Illuminate\Support\Facades\{Artisan,DB,Hash,Mail,Schedule};
 use App\Models\{Persona,PersonalAdministrativo,Usuario,Rol,Permiso,Modulo,NotificacionCita,CitaMedica};
 use App\Services\DevolucionService;
+use App\Support\PasswordPolicy;
+
+Artisan::command('clinica:datos-reportes {--confirmar-demo : Autorizar datos ficticios de presentación}', function() {
+    if(!$this->option('confirmar-demo')) { $this->error('Indique --confirmar-demo para añadir únicamente datos ficticios.'); return 1; }
+    $this->line(json_encode((new \App\Services\DatosDemostracionService)->run(),JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT));
+})->purpose('Añadir datos ficticios idempotentes para reportes, sin cobros ni envíos');
 
 Artisan::command('clinica:instalar {--datos : Cargar catálogos iniciales}', function() {
     $installed = DB::transaction(function () {
@@ -48,8 +54,8 @@ Artisan::command('clinica:habilitar-voz-recepcion', function() {
     $this->info('Permiso de voz habilitado para Recepción. Los demás permisos se conservaron.');
 })->purpose('Habilitar reportes por voz para Recepción en una base existente');
 Artisan::command('clinica:admin', function() {
-    $data=['ci'=>$this->ask('CI'),'nombres'=>$this->ask('Nombres'),'apellidos'=>$this->ask('Apellidos'),'telefono'=>$this->ask('Teléfono'),'correo'=>mb_strtolower($this->ask('Correo')),'password'=>$this->secret('Contraseña (mínimo 10 caracteres)')];
-    $validator=validator($data,['ci'=>'required|max:20|unique:persona,ci','nombres'=>'required|max:80','apellidos'=>'required|max:100','telefono'=>'required|max:20','correo'=>'required|email|max:120|unique:usuario,correo','password'=>'required|min:10|max:128']);
+    $data=['ci'=>$this->ask('CI'),'nombres'=>$this->ask('Nombres'),'apellidos'=>$this->ask('Apellidos'),'telefono'=>$this->ask('Teléfono'),'correo'=>mb_strtolower($this->ask('Correo')),'password'=>$this->secret('Contraseña. '.PasswordPolicy::DESCRIPTION)];
+    $validator=validator($data,['ci'=>'required|max:20|unique:persona,ci','nombres'=>'required|max:80','apellidos'=>'required|max:100','telefono'=>'required|max:20','correo'=>'required|email|max:120|unique:usuario,correo','password'=>PasswordPolicy::rules(required: true, confirmed: false)]);
     if($validator->fails()) {$this->error($validator->errors()->first());return 1;}
     DB::transaction(function() use($data) {$p=Persona::create(collect($data)->only(['ci','nombres','apellidos','telefono'])->all());PersonalAdministrativo::create(['id_personal'=>$p->id_persona,'cargo'=>'Administrador']);Usuario::create(['id_persona'=>$p->id_persona,'correo'=>$data['correo'],'password_hash'=>Hash::make($data['password']),'id_rol'=>Rol::where('nombre_rol','Administrador')->firstOrFail()->id_rol]);});$this->info('Administrador creado.');
 });

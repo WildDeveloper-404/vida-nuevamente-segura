@@ -4,7 +4,7 @@ Actualizado el 8 de noviembre de 2026. Los identificadores corresponden al archi
 
 | RF | Criterio implementado y condiciones |
 | --- | --- |
-| RF01 | Inicio por correo, hash de contraseña, rutas protegidas, bloqueo progresivo y token de recuperación de 30 minutos. |
+| RF01 | Inicio por correo, hash de contraseña, rutas protegidas y bloqueo progresivo. La recuperación usa un enlace de un solo uso válido por 30 minutos. Las contraseñas nuevas requieren al menos 8 caracteres con minúscula, mayúscula, número y carácter especial. |
 | RF02 | Menús y accesos filtrados por los permisos vigentes en cada petición. |
 | RF03 | Administración de cuentas, roles, módulos y permisos con baja lógica. |
 | RF04 | PostgreSQL registra cambios de las tablas de negocio en JSONB. Impide actualizar, borrar y truncar la bitácora. Incluye comparación y Excel. La bitácora reserva los valores personales, clínicos y secretos. |
@@ -24,7 +24,7 @@ Actualizado el 8 de noviembre de 2026. Los identificadores corresponden al archi
 | RF18 | Recordatorio programado para 24 horas antes. Una reserva hecha con menos antelación queda lista para el siguiente despacho. Se anulan avisos obsoletos. |
 | RF19 | Agenda diaria y semanal, estados por rol e inasistencia después de 30 minutos desde el inicio previsto. |
 | RF20 | Diagnóstico y código con formato CIE-10. Se bloquea el principio activo si coincide con una alergia confirmada. La comparación normalizada no infiere equivalencias entre familias de medicamentos. |
-| RF21 | Receta PDF al finalizar la atención, QR e integridad firmada de los datos de nuevas recetas. Las antiguas mantienen la verificación de existencia. |
+| RF21 | Receta disponible en el perfil clínico del paciente al finalizar la atención, con diagnóstico, indicaciones y descarga PDF sin necesidad de escaneo. Se conserva la integridad firmada de los datos. |
 | RF22 | Derivación rutinaria, prioritaria o urgente, precarga en la reserva, vínculo a la cita de destino y cierre al atenderla. |
 | RF23 | Dos modalidades de cobro nuevas: tarjeta con Stripe Checkout y efectivo en caja. Recibos nuevos REC-01. Stripe y sus devoluciones operan en modo de prueba con webhook firmado. Los comprobantes históricos conservan su método registrado. |
 | RF24 | Angélica informa sobre horarios, especialidades y citas propias. La CI sólo se acepta para el paciente autenticado que corresponde al documento. |
