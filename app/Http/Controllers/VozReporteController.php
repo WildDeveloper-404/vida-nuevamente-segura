@@ -16,7 +16,14 @@ class VozReporteController extends Controller
     public function procesarVoz(Request $r,VozService $voice,ReporteService $reports)
     {
         $d=$r->validate(['texto'=>'required|string|max:500']);$plan=$voice->plan($d['texto']);$doctor=session('rol')==='Medico'?(int)session('id_persona'):null;
-        if(($plan['tipo']??null)==='horarios') {
+        if (($plan['tipo'] ?? null) === 'recaudacion') {
+            $filters = Validator::make($plan, [
+                'desde' => 'required|date_format:Y-m-d',
+                'hasta' => 'required|date_format:Y-m-d|after_or_equal:desde',
+                'moneda' => 'nullable|in:bob,usd',
+            ])->validate();
+            $report = $reports->recaudacion($filters, $doctor);
+        } elseif (($plan['tipo'] ?? null) === 'horarios') {
             Validator::make($plan,['especialidad'=>'nullable|string|max:100'])->validate();
             $q=DB::table('horario_atencion as h')->join('medico as m','m.id_medico','=','h.id_medico')->join('persona as p','p.id_persona','=','m.id_medico')->join('medico_especialidad as me','me.id_medico','=','m.id_medico')->join('especialidad as e','e.id_especialidad','=','me.id_especialidad')->where('h.estado','Activo')->where('m.estado','Activo')->where('e.estado','Activo')->selectRaw("p.nombres || ' ' || p.apellidos AS medico,e.nombre AS especialidad,h.dia_semana,h.hora_inicio,h.hora_fin");
             if($doctor) $q->where('m.id_medico',$doctor);

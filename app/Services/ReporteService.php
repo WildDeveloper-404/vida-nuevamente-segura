@@ -59,6 +59,29 @@ class ReporteService
         if(count($rows)>1000) throw ValidationException::withMessages(['filtros'=>'El informe supera 1000 filas. Añada filtros para acotar el resultado.']);
         return ['columns'=>array_combine($fields,array_map(fn($f)=>self::FIELDS[$f][1],$fields)),'rows'=>$rows,'sql'=>$sql,'bindings'=>$bindings,'totals'=>[]];
     }
+    public function recaudacion(array $filters, ?int $doctor = null): array
+    {
+        $query = DB::table('pago as pg')
+            ->join('cita_medica as c', 'c.id_cita', '=', 'pg.id_cita')
+            ->leftJoin('devolucion_pago as dp', 'dp.id_pago', '=', 'pg.id_pago')
+            ->where('pg.estado_pago', 'Pagado')
+            ->whereRaw("dp.estado IS DISTINCT FROM 'Devuelto'")
+            ->whereDate('pg.fecha_pago', '>=', $filters['desde'])
+            ->whereDate('pg.fecha_pago', '<=', $filters['hasta'])
+            ->when($filters['moneda'] ?? null, fn ($q, $currency) => $q->where('pg.moneda', $currency))
+            ->when($doctor !== null, fn ($q) => $q->where('c.id_medico', $doctor))
+            ->selectRaw('pg.moneda AS moneda, COUNT(*) AS pagos, SUM(pg.monto) AS recaudado')
+            ->groupBy('pg.moneda')
+            ->orderBy('pg.moneda');
+
+        return [
+            'columns' => ['moneda' => 'Moneda', 'pagos' => 'Pagos', 'recaudado' => 'Recaudación'],
+            'rows' => $query->get()->all(),
+            'totals' => [],
+            'sql' => $query->toSql(),
+        ];
+    }
+
     public function static(array $d): array
     {
         $type=$d['tipo'];$q=$this->query();
@@ -70,7 +93,7 @@ class ReporteService
             $q=DB::table('paciente as p')->join('persona as pp','pp.id_persona','=','p.id_paciente')->whereBetween(DB::raw('p.fecha_registro::date'),[$d['desde'],$d['hasta']]);
             if(!empty($d['id_medico']) || !empty($d['id_especialidad']) || !empty($d['estado'])) $q->whereExists(function($sub) use($d) {$sub->selectRaw('1')->from('cita_medica as c')->whereColumn('c.id_paciente','p.id_paciente');foreach(['id_medico','id_especialidad','estado'] as $k) if(!empty($d[$k])) $sub->where('c.'.$k,$d[$k]);});
             $rows=$q->selectRaw("p.codigo_paciente AS codigo, pp.ci, pp.nombres || ' ' || pp.apellidos AS paciente, p.sexo, extract(year from age(current_date,p.fecha_nacimiento))::int AS edad, p.estado")->orderBy('pp.apellidos')->limit(1001)->get()->all();
-        } elseif($type==='consolidado' && empty($d['id_medico']) && empty($d['id_especialidad']) && empty($d['estado'])) $rows=DB::select('SELECT * FROM fn_reporte_consolidado_citas(?::date, ?::date)',[$d['desde'],$d['hasta']]);
+        }
         elseif(in_array($type,['medico','especialidad','estado','consolidado'])) {
             $group=match($type){'medico'=>"pm.nombres || ' ' || pm.apellidos",'estado'=>'c.estado',default=>'e.nombre'};
             $q->selectRaw($group.' AS grupo, count(*) AS total, count(*) FILTER (WHERE c.estado = ?) AS atendidas, count(*) FILTER (WHERE c.estado = ?) AS canceladas, count(*) FILTER (WHERE c.estado = ?) AS inasistencias',['Atendida','Cancelada','Inasistencia']);

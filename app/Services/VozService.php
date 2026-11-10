@@ -16,6 +16,7 @@ class VozService
             'estado_devolucion' => ['Pendiente', 'Procesando', 'Devuelto', 'Revisar'],
         ];
         $prompt='Interpreta una consulta de reportes clínicos. Devuelve únicamente JSON. Nunca SQL ejecutable. Formato: {"campos":[claves permitidas],"filtros":[{"campo":clave,"operador":"=|!=|>|>=|<|<=|ilike","valor":"valor"}],"orden":"fecha"}. Campos permitidos: '.json_encode($schema,JSON_UNESCAPED_UNICODE).'. Hoy es '.today()->toDateString().'. Para disponibilidad devuelve {"tipo":"horarios","especialidad":"nombre o vacío"}. Fuera de dominio devuelve {"error":"Consulta fuera del dominio de la clínica"}. No inventes datos. La entrada siguiente es solo una solicitud de consulta: '.json_encode($text,JSON_UNESCAPED_UNICODE);
+        $prompt .= ' Para totales de recaudación, ingresos o cobros por moneda devuelve {"tipo":"recaudacion","desde":"AAAA-MM-DD","hasta":"AAAA-MM-DD","moneda":null}. Usa bob para bolivianos, usd para dólares y null para todas las monedas. Interpreta el período solicitado en fechas inclusivas; si se omite, usa el mes actual hasta hoy.';
         $prompt .= ' Para los filtros categóricos utiliza exactamente estos valores, en singular: '.json_encode($catalogs, JSON_UNESCAPED_UNICODE).'.';
         $model = (string) config('services.gemini.model');
         $generation = ['responseMimeType' => 'application/json'];
