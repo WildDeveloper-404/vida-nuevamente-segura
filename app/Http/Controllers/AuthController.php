@@ -21,14 +21,23 @@ class AuthController extends Controller
     public function login(Request $r)
     {
         $d=$r->validate(['correo'=>'required|email|max:120','password'=>'required|string|max:255']);
-        $user=DB::transaction(function() use($d,$r) {
+        $ip = $r->ip();
+        // Railway replaces X-Real-IP on its public HTTP ingress.
+        if ($r->getHost() === config('app.railway_public_domain')) {
+            $forwardedIp = $r->header('X-Real-IP');
+            if (filter_var($forwardedIp, FILTER_VALIDATE_IP) !== false) {
+                $ip = $forwardedIp;
+            }
+        }
+
+        $user=DB::transaction(function() use($d,$ip) {
             $u=Usuario::whereRaw('lower(correo) = ?', [mb_strtolower(trim($d['correo']))])->lockForUpdate()->first();
             $eligible=$u && $u->estado==='Activo' && (!$u->bloqueado_hasta || $u->bloqueado_hasta->isPast());
             $hasher = $eligible && password_get_info($u->password_hash)['algoName'] === 'bcrypt'
                 ? Hash::driver('bcrypt')
                 : Hash::driver();
             $ok=$eligible && $hasher->check($d['password'],$u->password_hash);
-            $result=DB::select('SELECT * FROM fn_registrar_intento_login(?::varchar, ?::boolean, ?::varchar)',[$d['correo'],$ok?'true':'false',$r->ip()])[0];
+            $result=DB::select('SELECT * FROM fn_registrar_intento_login(?::varchar, ?::boolean, ?::varchar)',[$d['correo'],$ok?'true':'false',$ip])[0];
             if ($ok && $result->permitido && Hash::needsRehash($u->password_hash)) {
                 $u->update(['password_hash' => Hash::make($d['password'])]);
             }
